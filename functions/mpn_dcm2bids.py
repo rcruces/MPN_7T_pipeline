@@ -30,13 +30,6 @@ def main():
         # Run bids_validator
         print("Running bids_validator...")
         run_command('bids_validator')
-        
-        # Check if a file is BIDS compatible
-        validator = BIDSValidator()
-        if validator.is_bids('path/to/a/bids/file'):
-            print("The file is BIDS compatible.")
-        else:
-            print("The file is not BIDS compatible.")
 
         print("Workflow completed successfully.")
 

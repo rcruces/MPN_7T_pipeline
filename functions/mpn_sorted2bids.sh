@@ -1,6 +1,8 @@
 #!/bin/bash
 #
+# ---------------------------------------------------------------------------------
 # dicoms_sorted to BIDS v.2.0.0
+# ---------------------------------------------------------------------------------
 
 Col="38;5;83m" # Color code
 #---------------- FUNCTION: HELP ----------------#
@@ -15,17 +17,12 @@ Usage:    $(basename $0)\033[0m  \033[38;5;197m-in\033[0m <DICOMS_directory> \03
 
 \t\t\033[38;5;197m-force\033[0m 	flag that will overwrite the directory
 
-Check output with:
-http://bids-standard.github.io/bids-validator/
+Check output with: http://bids-standard.github.io/bids-validator/
 
-NOTE: This script REQUIRES dcm2niix to work:
-      https://github.com/rordenlab/dcm2niix
-NOTE: you need to modify lines 132 and 133 to
-      match your DICOM directories
-
+NOTE: This script REQUIRES dcm2niix to work: https://github.com/rordenlab/dcm2niix
 
 RRC
-McGill University, MNI, MICA-lab, June 2021
+McGill University, MNI, MICA-lab, November 2024
 raul.rodriguezcrcues@mcgill.ca
 "
 }

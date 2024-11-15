@@ -37,4 +37,4 @@ WORKDIR /app
 COPY . /app
 
 # Run the application
-CMD ["mpn_dcm2bids.py"]
+CMD ["functions/mpn_dcm2bids.py"]

@@ -1,10 +1,8 @@
 #!/bin/bash
 #
 # ---------------------------------------------------------------------------------
-# Examplo of how to run the micapipe Q1K on BIC-SGE
-# Using a singularity image of micapipe v0.2.3
-# https://hub.docker.com/r/micalab/micapipe/tags
-# author: raulrc 
+# Run the micapipe MPN on BIC-SGE with a singularity container
+# Using a singularity image of micapipe v0.2.3: https://hub.docker.com/r/micalab/micapipe/tags
 # ---------------------------------------------------------------------------------
 
 # Subject ID
