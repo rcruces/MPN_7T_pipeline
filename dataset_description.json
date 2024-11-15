@@ -1,0 +1,36 @@
+{
+    "Name": "Montreal Paris Biobanque",
+    "BIDSVersion": "2.0.0",
+    "DatasetType": "raw",
+    "License": "GPL-3.0",
+    "Authors": [
+      "Boris Bernhardt",
+      "Raul Cruces",
+      "Julian Doyon",
+      "Vladimir Fonov",
+      "Heather Hansen",
+      "Najmeh Khalili-Mahani",
+      "Ilana Ruth Leppert",
+      "Maxime Mulder",
+      "Mai Pham Xuan",
+      "Enning Yang"
+    ],
+    "Acknowledgements": "Special thanks to ...",
+    "HowToAcknowledge": "Please cite this paper: ...",
+    "Funding": [
+      "RRC: this research was undertaken thanks in part to funding from the Ministère de l’Economie, de l’Innovation et de l’Énergie du Québec and to funding from the Canada First Research Excellence Fund, awarded to the Healthy Brains, Healthy Lives initiative at McGill University",
+      "RRC: Programme de bourse de formation postdoctorale, Fonds de recherche du Québec - Santé 291486"
+    ],
+    "EthicsApprovals": [
+      "..."
+    ],
+    "ReferencesAndLinks": [
+      "https://loris.ca",
+      "Das, S., Zijdenbos, A. P., Harlap, J., Vins, D., & Evans, A. C. (2012). LORIS: a web-based data management system for multi-center studies. Frontiers in neuroinformatics, 5, 37."
+      "https://cbrain.ca",
+      "Sherif, T., Rioux, P., Rousseau, M. E., Kassis, N., Beck, N., Adalat, R., ... & Evans, A. C. (2014). CBRAIN: a web-based, distributed computing platform for collaborative neuroimaging research. Frontiers in neuroinformatics, 8, 54."
+      "https://micapipe.readthedocs.io",
+      "Cruces, R. R., Royer, J., Herholz, P., Larivière, S., De Wael, R. V., Paquola, C., ... & Bernhardt, B. C. (2022). Micapipe: A pipeline for multimodal neuroimaging and connectome analysis. NeuroImage, 263, 119612."
+    ],
+    "DatasetDOI": "...",
+  }
