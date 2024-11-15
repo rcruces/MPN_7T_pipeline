@@ -36,21 +36,23 @@ The data processing workflow begins by transferring raw MRI data, in both BIDS a
 ## MRI transfering steps
 
 ### 1. DICOM Sorting: Organizes raw DICOM into a temporary structurated directories
-```python
-dcmsort.py
+```bash
+dcmSort.sh
 ```
 
 ### 2. Sorted DICOM to NIfTI BIDS
-```python
-dcm2bids_mpn.py
+```bash
+mpn_sorted2bids.sh
 ```
 
 ### 3. Integrated BIDS validation
 ```python
-bids_validator.py
+from bids_validator import BIDSValidator
+BIDSValidator().is_bids('path/to/mpn_rawdata')
+
 ```
 
-### Example `micapipe v0.2.3` with container
+### Running `micapipe v0.2.3` with container
 ```bash
 micapipe_q1k.sh Q1K004 01 <path to singularity image>
 ```

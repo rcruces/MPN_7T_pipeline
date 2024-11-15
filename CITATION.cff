@@ -1,0 +1,62 @@
+# schema: https://github.com/citation-file-format/citation-file-format/blob/main/schema-guide.md
+
+cff-version: 1.2.0
+
+title: MPN_7T_pipeline
+
+license: GPL-3.0
+
+type: software
+
+repository-code: https://github.com/rcruces/7T_pipeline
+
+message: This is a worflow that transforms raw dicoms 7T Terra Siemens to BIDS for the Montréal Paris Neurobanque.
+
+identifiers:
+  - description: Releases on Zenodo?
+    type: doi
+    value: 
+
+keywords:
+  - dataset  
+  - open data  
+  - brain imaging data structure
+  - BIDS
+  - neuroscience
+  - neuroimaging
+  - neuroinformatics
+
+authors:
+  - family-names: Bernhardt
+    given-names: Boris
+    orcid: https://orcid.org/0000
+  - family-names: Cruces
+    given-names: Raul
+    orcid: https://orcid.org/0000-0001-8002-0877
+  - family-names: Doyon
+    given-names: Julian
+    orcid: https://orcid.org/0000
+  - family-names: Fonov
+    given-names: Vladimir
+    orcid: https://orcid.org/0000
+  - family-names: Fonov
+    given-names: Vladimir
+    orcid: https://orcid.org/0000
+  - family-names: Hansen
+    given-names: Heather
+    orcid: https://orcid.org/0000
+  - family-names: Khalili-Mahani
+    given-names: Najmeh
+    orcid: https://orcid.org/0000
+  - family-names: Leppert
+    given-names: Ilana Ruth
+    orcid: https://orcid.org/0000
+  - family-names: Mulder
+    given-names: Maxime
+    orcid: https://orcid.org/0000
+  - family-names: Xuan
+    given-names: Mai Pham
+    orcid: https://orcid.org/0000
+  - family-names: Yang
+    given-names: Enning
+    orcid: https://orcid.org/0000
