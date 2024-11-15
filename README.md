@@ -56,13 +56,37 @@ BIDSValidator().is_bids('path/to/mpn_rawdata')
 ```bash
 micapipe_q1k.sh Q1K004 01 <path to singularity image>
 ```
+# Naming convention
+| **7T Terra Siemens acquisition**             | **BIDS**                            | **Directory** |
+|:--------------------------------------------:|:-----------------------------------:|:-------------:|
+| *anat-T1w_acq_mprage_0.8mm_CSptx             | T1w                                 | anat          |
+| *fmap-b1_tra_p2                              | acq-anat_TB1TFL                     | fmap          |
+| *fmap-b1_tra_p2                              | acq-sfam_TB1TFL                     | fmap          |
+| *fmap-fmri_acq-mbep2d_SE_19mm_dir-AP         | dir-AP_epi                          | fmap          |
+| *fmap-fmri_acq-mbep2d_SE_19mm_dir-PA         | dir-PA_epi                          | fmap          |
+| *func-cloudy_acq-ep2d_MJC_19mm               | task-rest_cloudy_bold               | func          |
+| *func-cross_acq-ep2d_MJC_19mm                | task-rest_cross_bold                | func          |
+| *anat-T1w_acq-mp2rage_0.7mm_CSptx_INV1       | inv-1_MP2RAGE                       | anat          |
+| *anat-T1w_acq-mp2rage_0.7mm_CSptx_INV2       | inv-2_MP2RAGE                       | anat          |
+| *anat-T1w_acq-mp2rage_0.7mm_CSptx_T1_Images  | T1map                               | anat          |
+| *anat-T1w_acq-mp2rage_0.7mm_CSptx_UNI_Images | UNIT1                               | anat          |
+| *anat-T1w_acq-mp2rage_0.7mm_CSptx_UNI-DEN    | acq-DEN_UNIT1                       | anat          |
+|                                              | FLAIR                               | anat          |
+| *dwi_acq_multib_38dir_AP_acc9_SBRef          | acq-multib38_dir-AP_sbref           | dwi           |
+| *dwi_acq_multib_38dir_AP_acc9                | acq-multib38_dir-AP_dwi             | dwi           |
+| *dwi_acq_multib_70dir_AP_acc9_SBRef          | acq-multib70_dir-AP_sbref           | dwi           |
+| *dwi_acq_multib_70dir_AP_acc9                | acq-multib70_dir-AP_dwi             | dwi           |
+| *dwi_acq_b0_PA_SBRef                         | acq-b0_dir-PA_sbref                 | dwi           |
+| *dwi_acq_b0_PA                               | acq-b0_dir-PA_dwi                   | dwi           |
+
+
 
 # Requirements
 
 | **Package**       |  **Version**  |
 |:-----------------:|:-------------:|
 | dcm2niix          | v1.0.20240202 |
-| bids_validator    |               |
+| bids_validator    | v2.0.0        |
 
 
 
