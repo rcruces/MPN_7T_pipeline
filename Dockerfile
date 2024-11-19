@@ -27,6 +27,9 @@ RUN apt-get update -qq \
     && make install \
     && rm -rf /tmp/dcm2niix
 
+# Install jq
+RUN apt-get update && apt-get install -y jq
+
 # Install Python package
 RUN pip install bids_validator
 

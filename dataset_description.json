@@ -1,6 +1,6 @@
 {
     "Name": "Montreal Paris Biobanque",
-    "BIDSVersion": "1.15.1",
+    "BIDSVersion": "1.10.0",
     "DatasetType": "raw",
     "License": "GPL-3.0",
     "Acknowledgements": "Special thanks to ...",

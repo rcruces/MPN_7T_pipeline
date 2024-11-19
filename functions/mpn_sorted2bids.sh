@@ -312,6 +312,13 @@ Info "REPLACE \"_sbref_ph\" with \"_part-phase_sbref\""
 for dwi in $(ls "$BIDS"/dwi/*"_sbref_ph"*); do mv $dwi ${dwi/_sbref_ph/_part-phase_sbref}; done
 
 # -----------------------------------------------------------------------------------------------
+# Add Units to the phase files
+for file in "$BIDS"/*/*phase*json; do
+  # Add the key "Units": "arbitrary" to the JSON file
+  jq '. + {"Units": "arbitrary"}' "$file" > tmp.$$.json && mv tmp.$$.json "$file"
+done
+
+# -----------------------------------------------------------------------------------------------
 # QC, count the number of Niftis (json) per subject
 dat=$(stat ${BIDS} | awk 'NR==6 {print $2}')
 anat=$(ls -R ${BIDS}/anat | grep gz | wc -l)
