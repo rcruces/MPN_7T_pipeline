@@ -85,6 +85,8 @@ micapipe_q1k.sh Q1K004 01 <path to singularity image>
 
 | **Package**       |  **Version**  |
 |:-----------------:|:-------------:|
+| python            |  3.8          |
 | dcm2niix          |  1.0.20240202 |
 | jq                |  1.6          |
-| bids_validator    |  1.15.1       |
+| bids_validator    |  2.0.0        |
+| deno              |  2.0.6        |
