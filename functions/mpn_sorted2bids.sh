@@ -42,7 +42,7 @@ cmd() {
     done
 
     # Print the command with timestamp
-    [[ ${quiet} != TRUE ]] && echo -e "\033[38;5;118m\n${str}:\nCOMMAND -->  \033[38;5;122m${l_command}  \033[0m"
+    [[ ${quiet} != TRUE ]] && echo -e "\033[38;5;118m\n${str}:\ncommand: \033[38;5;122m${l_command}  \033[0m"
 
     # Execute the command if not in test mode
     [[ -z "$TEST" ]] && eval "$l_command"
@@ -175,8 +175,8 @@ bids=(
     acq-anat_TB1TFL
     dir-AP_epi
     dir-PA_epi
-    task-rest_cloudy_bold
-    task-rest_cross_bold
+    task-cloudy_bold
+    task-cross_bold
     inv-1_MP2RAGE
     inv-2_MP2RAGE
     T1map
@@ -198,8 +198,8 @@ acq-multib38_dir-AP_sbref
 acq-multib38_dir-AP_dwi
 acq-multib70_dir-AP_sbref
 acq-multib70_dir-AP_dwi
-acq-b0_dir-PA_sbref
-acq-b0_dir-PA_dwi
+acq-b0_dir-PA_run-2_sbref
+acq-b0_dir-PA_run-1_sbref
 )
 
 #-----------------------------------------------------------------------------------------------
@@ -230,12 +230,14 @@ for ((k=0; k<=n; k++)); do
 done
 
 # move files to their corresponding directory
-cmd mv "$BIDS"/*MP2RAGE* "$BIDS"/anat
-cmd mv "$BIDS"/*UNIT1* "$BIDS"/anat
-cmd mv "$BIDS"/*bold* "$BIDS"/func
-cmd mv "$BIDS"/*T1* "$BIDS"/anat
-cmd mv "$BIDS"/*T2* "$BIDS"/anat
-cmd mv "$BIDS"/*fieldmap* "$BIDS"/fmap
+# Moving files to their correct directory location
+if ls "$BIDS"/*MP2RAGE* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*MP2RAGE* "$BIDS"/anat; fi
+if ls "$BIDS"/*UNIT1* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*UNIT1* "$BIDS"/anat; fi
+if ls "$BIDS"/*bold* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*bold* "$BIDS"/func; fi
+if ls "$BIDS"/*T1* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*T1* "$BIDS"/anat; fi
+if ls "$BIDS"/*T2* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*T2* "$BIDS"/anat; fi
+if ls "$BIDS"/*fieldmap* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*fieldmap* "$BIDS"/fmap; fi
+if ls "$BIDS"/*TB1TFL* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*TB1TFL* "$BIDS"/fmap; fi
 
 # Rename echos: echo-1_bold.nii.gz
 for i in {1..3}; do
@@ -251,8 +253,16 @@ for func in $(ls "$BIDS"/func/*"bold_ph"*); do mv ${func} ${func/bold_ph/part-ph
 # REMOVE the run-?
 for func in $(ls "$BIDS"/func/*"_run-"*); do mv ${func} ${func/_run-?/}; done
 
-# remove MP2RAGE bval and bvecs
-# *MP2RAGE.bv*
+Info "Remove MP2RAGE bval and bvecs"
+rm "$BIDS"/anat/*MP2RAGE.bv*
+
+Info "Organize TB1TFL acquisitions"
+TB1TFL=(acq-sfam_run-1_TB1TFL acq-anat_run-1_TB1TFL acq-sfam_run-2_TB1TFL acq-anat_run-2_TB1TFL)
+for i in {1..4}; do
+  for b1 in $(ls "$BIDS"/fmap/*"acq-anat_run-${i}_TB1TFL"*); do
+  mv ${b1} ${b1/acq-anat_run-${i}_TB1TFL/${TB1TFL[$((i-1))]}};
+  done
+done
 
 # -----------------------------------------------------------------------------------------------
 Info "DWI acquisitions"
@@ -280,16 +290,16 @@ done
 cmd cd "$BIDS"
 for n in $(ls *bval); do Dir=0
   for i in $(cat $n); do if [[ "$i" == 0.00 ]] || [[ "$i" == 0 ]]; then Dir=$((Dir+1)); else Dir=$((Dir+1)); fi; done
-  for j in ${n/bval/}*; do mv -v "$j" dwi/${j/NUM/$Dir}; done
+  for j in ${n/bval/}*; do mv "$j" dwi/${j/NUM/$Dir}; done
 done
 
 # Moving files to their correct directory location
-cmd mv -v "$BIDS"/*b0* "$BIDS"/dwi
-cmd mv -v "$BIDS"/*sbref* "$BIDS"/dwi
-cmd mv -v "$BIDS"/*epi* "$BIDS"/fmap
-cmd mv -v "$BIDS"/*angio* "$BIDS"/anat
-cmd mv -v "$BIDS"/*MTR* "$BIDS"/anat
-cmd rm -v "$BIDS"/anat/*ROI*
+if ls "$BIDS"/*b0* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*b0* "$BIDS"/dwi; fi
+if ls "$BIDS"/*sbref* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*sbref* "$BIDS"/dwi; fi
+if ls "$BIDS"/*epi* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*epi* "$BIDS"/fmap; fi
+if ls "$BIDS"/*angio* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*angio* "$BIDS"/anat; fi
+if ls "$BIDS"/*MTR* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*MTR* "$BIDS"/anat; fi
+if ls "$BIDS"/anat/*ROI* 1> /dev/null 2>&1; then cmd rm "$BIDS"/anat/*ROI*; fi
 
 Info "REMOVE run-1 string from new 7T DWI acquisition"
 for dwi in $(ls "$BIDS"/dwi/*"acq-"*"_dir-"*"_run-1_dwi"*); do mv $dwi ${dwi/run-1_/}; done
@@ -298,7 +308,7 @@ Info "REPLACE run-2 string to  from new 7T DWI acquisition"
 for dwi in $(ls "$BIDS"/dwi/*"acq-"*"_dir-"*"_run-2_dwi"*); do mv $dwi ${dwi/run-2_/part-phase_}; done
 
 Info "REPLACE \"_sbref_ph\" with \"_part-phase_sbref\""
-for dwi in $(ls "$BIDS"/dwi/*"_sbref_ph"*); do mv -v $dwi ${dwi/_sbref_ph/_part-phase_sbref}; done
+for dwi in $(ls "$BIDS"/dwi/*"_sbref_ph"*); do mv $dwi ${dwi/_sbref_ph/_part-phase_sbref}; done
 
 # -----------------------------------------------------------------------------------------------
 # QC, count the number of Niftis (json) per subject
@@ -319,25 +329,27 @@ echo -e "${Subj}\t${SES/ses-/}\t${dat}\t${SUBJ_DIR}\t${anat}\t${dwi}\t${func}\t$
 # Gitignore file
 bidsignore="$BIDS_DIR"/.bidsignore
 # Check if file exist
-if [ ! -f "$bidsignore" ]; echo "${tsv_file}" > "$bidsignore"; fi
+if [ ! -f "$bidsignore" ]; then echo "participants_7t2bids.tsv" > "$bidsignore"; fi
 
 # -----------------------------------------------------------------------------------------------
 # Add the new subject to the participants.tsv file
 participants_tsv="$BIDS_DIR"/participants.tsv
 # Check if file exist
-if [ ! -f "$participants_tsv" ]; then echo -e "participant_id\tsession_id" > "$participants_tsv"; fi
+if [ ! -f "$participants_tsv" ]; then echo -e "participant_id\tsession_id\tsite\tgroup" > "$participants_tsv"; fi
 # Add information about subject
 echo -e "${Subj}\t${SES/ses-/}\tMontreal_SiemmensTerra7T\tHealthy" >> "$participants_tsv"
 
 # -----------------------------------------------------------------------------------------------
 # Get the repository path
-gitrepo=$(dirname $(realpath "../$0"))
+gitrepo=$(dirname $(dirname $(realpath "$0")))
 
-# Copy participants.json to the BIDS directory
+# Copy json files to the BIDS directory
 if [ ! -f "$BIDS_DIR"/participants.json ]; then cp -v "$gitrepo"/participants.json "$BIDS_DIR"/participants.json; fi
+if [ ! -f "$BIDS_DIR"/task-cross_bold.json ]; then cp -v "$gitrepo"/task-cross_bold.json "$BIDS_DIR"/task-cross_bold.json; fi
+if [ ! -f "$BIDS_DIR"/task-cloudy_bold.json ]; then cp -v "$gitrepo"/task-cloudy_bold.json "$BIDS_DIR"/task-cloudy_bold.json; fi
 
 # Copy the data_set_description.json file to the BIDS directory
-if [ ! -f "$BIDS_DIR"/data_set_description.json ]; then cp -v "$gitrepo"/data_set_description.json "$BIDS_DIR"/data_set_description.json; fi
+if [ ! -f "$BIDS_DIR"/dataset_description.json ]; then cp -v "$gitrepo"/dataset_description.json "$BIDS_DIR"/dataset_description.json; fi
 
 # Copy the data_set_description.json file to the BIDS directory
 if [ ! -f "$BIDS_DIR"/CITATION.cff ]; then cp -v "$gitrepo"/CITATION.cff "$BIDS_DIR"/CITATION.cff; fi

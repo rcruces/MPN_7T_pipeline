@@ -1,0 +1,10 @@
+{
+  "Manufacturer": "Siemens",
+	"ManufacturersModelName": "Terra",
+	"ProcedureStepDescription": "Montreal Paris Neurobanque",
+	"BodyPartExamined": "BRAIN",
+	"ProtocolName": "func-cloudy_acq-ep2d_MJC_19mm",
+	"MagneticFieldStrength": 7.0,
+	"TaskName": "rest-cloudy",
+	"Instructions": "eyes closed"
+}

@@ -6,20 +6,20 @@ title: Montreal Paris Biobanque 7T
 
 license: GPL-3.0
 
-type: software
+type: "software"
 
 repository-code: https://github.com/rcruces/7T_pipeline
 
-message: Montréal Paris Neurobanque: from 7T Terra Siemens to BIDS.
+message: Montréal Paris Neurobanque
 
 identifiers:
-  - description: Releases on Zenodo?
+  - description: "The concept DOI of the pre-release version."
     type: doi
-    value: 
+    value: 10.0000/zenodo.0000000s
 
 keywords:
-  - dataset  
-  - open data  
+  - dataset
+  - open data
   - brain imaging data structure
   - BIDS
   - neuroscience
@@ -29,34 +29,23 @@ keywords:
 authors:
   - family-names: Bernhardt
     given-names: Boris
-    orcid: https://orcid.org/0000
+    orcid: https://orcid.org/0000-0001-9256-6041
   - family-names: Cruces
     given-names: Raul
     orcid: https://orcid.org/0000-0001-8002-0877
   - family-names: Doyon
     given-names: Julian
-    orcid: https://orcid.org/0000
   - family-names: Fonov
     given-names: Vladimir
-    orcid: https://orcid.org/0000
-  - family-names: Fonov
-    given-names: Vladimir
-    orcid: https://orcid.org/0000
   - family-names: Hansen
     given-names: Heather
-    orcid: https://orcid.org/0000
   - family-names: Khalili-Mahani
     given-names: Najmeh
-    orcid: https://orcid.org/0000
   - family-names: Leppert
     given-names: Ilana Ruth
-    orcid: https://orcid.org/0000
   - family-names: Mulder
     given-names: Maxime
-    orcid: https://orcid.org/0000
   - family-names: Xuan
     given-names: Mai Pham
-    orcid: https://orcid.org/0000
   - family-names: Yang
     given-names: Enning
-    orcid: https://orcid.org/0000
