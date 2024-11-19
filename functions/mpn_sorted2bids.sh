@@ -337,7 +337,7 @@ echo -e "${Subj}\t${SES/ses-/}\t${dat}\t${SUBJ_DIR}\t${anat}\t${dwi}\t${func}\t$
 # Gitignore file
 bidsignore="$BIDS_DIR"/.bidsignore
 # Check if file exist
-if [ ! -f "$bidsignore" ]; then echo "participants_7t2bids.tsv" > "$bidsignore"; fi
+if [ ! -f "$bidsignore" ]; then echo -e "participants_7t2bids.tsv\nbids_validator_output.txt" > "$bidsignore"; fi
 
 # -----------------------------------------------------------------------------------------------
 # Add the new subject to the participants.tsv file
