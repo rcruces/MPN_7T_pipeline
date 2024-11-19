@@ -2,7 +2,7 @@
 
 cff-version: 1.2.0
 
-title: Montreal Paris Biobanque 7T pipeline
+title: Montreal Paris Biobanque 7T
 
 license: GPL-3.0
 
@@ -10,7 +10,7 @@ type: software
 
 repository-code: https://github.com/rcruces/7T_pipeline
 
-message: This is a worflow that transforms raw dicoms 7T Terra Siemens to BIDS for the Montréal Paris Neurobanque.
+message: Montréal Paris Neurobanque: from 7T Terra Siemens to BIDS.
 
 identifiers:
   - description: Releases on Zenodo?

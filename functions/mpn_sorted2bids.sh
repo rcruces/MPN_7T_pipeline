@@ -300,6 +300,7 @@ for dwi in $(ls "$BIDS"/dwi/*"acq-"*"_dir-"*"_run-2_dwi"*); do mv $dwi ${dwi/run
 Info "REPLACE \"_sbref_ph\" with \"_part-phase_sbref\""
 for dwi in $(ls "$BIDS"/dwi/*"_sbref_ph"*); do mv -v $dwi ${dwi/_sbref_ph/_part-phase_sbref}; done
 
+# -----------------------------------------------------------------------------------------------
 # QC, count the number of Niftis (json) per subject
 dat=$(stat ${BIDS} | awk 'NR==6 {print $2}')
 anat=$(ls -R ${BIDS}/anat | grep gz | wc -l)
@@ -314,8 +315,39 @@ if [ ! -f "$tsv_file" ]; then echo -e "sub\tses\date\tdicoms\tN.anat\tN.dwi\tN.f
 # Add information about subject
 echo -e "${Subj}\t${SES/ses-/}\t${dat}\t${SUBJ_DIR}\t${anat}\t${dwi}\t${func}\t${fmap}" >> "$tsv_file"
 
+# -----------------------------------------------------------------------------------------------
+# Gitignore file
+bidsignore="$BIDS_DIR"/.bidsignore
+# Check if file exist
+if [ ! -f "$bidsignore" ]; echo "${tsv_file}" > "$bidsignore"; fi
+
+# -----------------------------------------------------------------------------------------------
+# Add the new subject to the participants.tsv file
+participants_tsv="$BIDS_DIR"/participants.tsv
+# Check if file exist
+if [ ! -f "$participants_tsv" ]; then echo -e "participant_id\tsession_id" > "$participants_tsv"; fi
+# Add information about subject
+echo -e "${Subj}\t${SES/ses-/}\tMontreal_SiemmensTerra7T\tHealthy" >> "$participants_tsv"
+
+# -----------------------------------------------------------------------------------------------
+# Get the repository path
+gitrepo=$(dirname $(realpath "../$0"))
+
+# Copy participants.json to the BIDS directory
+if [ ! -f "$BIDS_DIR"/participants.json ]; then cp -v "$gitrepo"/participants.json "$BIDS_DIR"/participants.json; fi
+
+# Copy the data_set_description.json file to the BIDS directory
+if [ ! -f "$BIDS_DIR"/data_set_description.json ]; then cp -v "$gitrepo"/data_set_description.json "$BIDS_DIR"/data_set_description.json; fi
+
+# Copy the data_set_description.json file to the BIDS directory
+if [ ! -f "$BIDS_DIR"/CITATION.cff ]; then cp -v "$gitrepo"/CITATION.cff "$BIDS_DIR"/CITATION.cff; fi
+
+# Create README
+echo -e "This dataset was provided by the Montreal Paris Neurobanque initiative.\n\nIf you reference this dataset in your publications, please acknowledge its authors." > "$BIDS_DIR"/README
+
+# -----------------------------------------------------------------------------------------------
 # Go back to initial directory
-cmd cd "$here"
+cd "$here"
 
 Info "Remember to validate your BIDS directory:
       http://bids-standard.github.io/bids-validator/"
