@@ -30,6 +30,7 @@ import os
 import subprocess
 import tempfile
 import argparse
+import time
 
 # Arguments
 parser = argparse.ArgumentParser(description='Convert DICOMs to BIDS format.')
@@ -67,6 +68,9 @@ def validate_bids():
     run_command(f'deno run --allow-write -ERN jsr:@bids/validator {bids_dir} --ignoreWarnings --outfile {bids_dir}/bids_validator_output.txt')
 
 def main():
+    # Set a timer
+    start_time = time.time()
+
     # Create a temporary directory
     with tempfile.TemporaryDirectory() as tmpdirname:
         print(f"Created temporary directory at {tmpdirname}")
@@ -89,8 +93,10 @@ def main():
         # Print validate_bids output
         with open(os.path.join(bids_dir, 'bids_validator_output.txt'), 'r') as file:
             print(file.read())
-
-        print("Workflow completed successfully.")
+        
+        # Print success message with time
+        elapsed_time = time.time() - start_time
+        print(f"Workflow completed successfully in {elapsed_time // 60:.0f} minutes and {elapsed_time % 60:.0f} seconds.")
 
 if __name__ == "__main__":
     main()
