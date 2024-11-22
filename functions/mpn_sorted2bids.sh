@@ -258,7 +258,7 @@ Info "Remove MP2RAGE bval and bvecs"
 rm "$BIDS"/anat/*MP2RAGE.bv*
 
 Info "Organize TB1TFL acquisitions"
-TB1TFL=(acq-sfam_run-1_TB1TFL acq-anat_run-1_TB1TFL acq-sfam_run-2_TB1TFL acq-anat_run-2_TB1TFL)
+TB1TFL=(acq-famp_run-1_TB1TFL acq-anat_run-1_TB1TFL acq-famp_run-2_TB1TFL acq-anat_run-2_TB1TFL)
 for i in {1..4}; do
   for b1 in $(ls "$BIDS"/fmap/*"acq-anat_run-${i}_TB1TFL"*); do
   mv ${b1} ${b1/acq-anat_run-${i}_TB1TFL/${TB1TFL[$((i-1))]}};
