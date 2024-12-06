@@ -23,8 +23,8 @@ Functions:
 Arguments:
     --dicoms_dir (str): Directory containing DICOM files.
     --bids_dir (str): Output BIDS directory.
-    --sub (str): Subject ID.
-    --ses (str): Session ID.
+    --sub (str): Subject ID, NO sub- string.
+    --ses (str): Session ID, NO ses- string.
 """
 import os
 import subprocess
@@ -45,27 +45,29 @@ bids_dir = args.bids_dir
 sub = args.sub
 ses = args.ses
 
+# Remove strings if they exist in sub and ses
+sub = sub.replace('sub-', '')
+ses = ses.replace('ses-', '')
+
 # Set workflow
 def run_command(command):
     try:
-        subprocess.run(command, check=True, shell=True)
+        subprocess.run(command.split(), check=True)
     except subprocess.CalledProcessError as e:
-        print(f"Error occurred while running command: {command}")
+        print(f"Error occurred while running command: {command}. Exception: {e}")
         print(e)
         raise
 
 # Workflow steps
-def sort_dicoms():
-    print("Sorting DICOMs with dcm2Sort...")
-    run_command(f'dcm2Sort.sh {dicoms_dir} {os.path.join(bids_dir, "sorted_dicoms")}')
-
-def sorted2bids():
-    print("Converting sorted DICOMs to BIDS format with dcm2niix sorted2bids...")
-    run_command(f'mpn_sorted2bids.sh -b y -z y -o {bids_dir} -f "%p_%s" {os.path.join(bids_dir, "sorted_dicoms")}')
+def sorted2bids(tmpdirname):
+    print("Running Sorted dicoms to BIDS ...")
+    run_command(f"mpn_sorted2bids.sh -in {tmpdirname} -id {sub} -ses {ses} -o {bids_dir}")
 
 def validate_bids():
-    print("Validating BIDS output with bids-validator...")
-    run_command(f'deno run --allow-write -ERN jsr:@bids/validator {bids_dir} --ignoreWarnings --outfile {bids_dir}/bids_validator_output.txt')
+    print("Running BIDS validator ...")
+    command = f'deno run --allow-write -ERN jsr:@bids/validator {bids_dir} --ignoreWarnings --outfile {bids_dir}/bids_validator_output.txt'
+    print(f"Running command: {command}")
+    run_command(command)
 
 def main():
     # Set a timer
@@ -80,23 +82,21 @@ def main():
 
         # Run sort_dicoms
         print("Running Sorting dicoms ...")
-        sort_dicoms()
+        run_command(f'dcm2Sort.sh {dicoms_dir} {tmpdirname}')
 
         # Run sorted2bids
-        print("Running Sorted dicoms to BIDS ...")
-        sorted2bids()
+        sorted2bids(tmpdirname)
 
         # Run validate_bids
-        print("Running BIDS validator ...")
         validate_bids()
 
         # Print validate_bids output
         with open(os.path.join(bids_dir, 'bids_validator_output.txt'), 'r') as file:
             print(file.read())
         
-        # Print success message with time
         elapsed_time = time.time() - start_time
-        print(f"Workflow completed successfully in {elapsed_time // 60:.0f} minutes and {elapsed_time % 60:.0f} seconds.")
+        minutes, seconds = divmod(elapsed_time, 60)
+        print(f"Workflow completed successfully in {minutes:.0f} minutes and {seconds:.0f} seconds.")
 
 if __name__ == "__main__":
     main()
