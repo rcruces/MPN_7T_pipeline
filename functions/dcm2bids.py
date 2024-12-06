@@ -40,8 +40,8 @@ parser.add_argument('--sub', required=True, help='Subject ID')
 parser.add_argument('--ses', required=True, help='Session ID')
 
 args = parser.parse_args()
-dicoms_dir = args.dicoms_dir
-bids_dir = args.bids_dir
+dicoms_dir = os.path.abspath(args.dicoms_dir)
+bids_dir = os.path.abspath(args.bids_dir)
 sub = args.sub
 ses = args.ses
 
