@@ -82,7 +82,7 @@ def main():
 
         # Run sort_dicoms
         print("Running Sorting dicoms ...")
-        run_command(f'dcm2Sort.sh {dicoms_dir} {tmpdirname}')
+        run_command(f'dcmSort.sh {dicoms_dir} {tmpdirname}')
 
         # Run sorted2bids
         sorted2bids(tmpdirname)
