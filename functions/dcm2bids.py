@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 This script converts DICOM files to BIDS format using the MPN 7T workflow.
 
@@ -36,12 +37,14 @@ import time
 parser = argparse.ArgumentParser(description='Convert DICOMs to BIDS format.')
 parser.add_argument('--dicoms_dir', required=True, help='Directory containing DICOM files')
 parser.add_argument('--bids_dir', required=True, help='Output BIDS directory')
+parser.add_argument('--sorted_dir', required=False, help='Directory containing SORTED DICOM files')
 parser.add_argument('--sub', required=True, help='Subject ID')
 parser.add_argument('--ses', required=True, help='Session ID')
 
 args = parser.parse_args()
 dicoms_dir = os.path.abspath(args.dicoms_dir)
 bids_dir = os.path.abspath(args.bids_dir)
+sorted_dir = os.path.abspath(args.sorted_dir) if args.sorted_dir else None
 sub = args.sub
 ses = args.ses
 
@@ -49,9 +52,16 @@ ses = args.ses
 sub = sub.replace('sub-', '')
 ses = ses.replace('ses-', '')
 
+print('-------------------------------------------------------')
+print(f'Subjet:  {sub}')
+print(f'Session: {ses}')
+print(f'dicoms directory:    {dicoms_dir}')
+print(f'bids directory:      {bids_dir}')
+
 # Set workflow
 def run_command(command):
     try:
+        print(f"Running command: {command}")
         subprocess.run(command.split(), check=True)
     except subprocess.CalledProcessError as e:
         print(f"Error occurred while running command: {command}. Exception: {e}")
@@ -60,43 +70,43 @@ def run_command(command):
 
 # Workflow steps
 def sorted2bids(tmpdirname):
-    print("/n[step 2] ... Running Sorted dicoms to BIDS .../n")
-    run_command(f"mpn_sorted2bids.sh -in {tmpdirname} -id {sub} -ses {ses} -o {bids_dir}")
+    print("\n[step 2] ... Running Sorted dicoms to BIDS ...\n")
+    run_command(f'mpn_sorted2bids.sh -in {tmpdirname} -id {sub} -ses {ses} -bids {bids_dir}')
 
 def validate_bids():
-    print("/n[step 3] ... Running BIDS validator .../n")
-    command = f'deno run --allow-write -ERN jsr:@bids/validator {bids_dir} --ignoreWarnings --outfile {bids_dir}/bids_validator_output.txt'
-    print(f"Running command: {command}")
-    run_command(command)
+    print("\n[step 3] ... Running BIDS validator ...\n")
+    run_command(f'deno run --allow-write -ERN jsr:@bids/validator {bids_dir} --ignoreWarnings --outfile {bids_dir}/bids_validator_output.txt')
 
 def main():
     # Set a timer
     start_time = time.time()
 
-    # Create a temporary directory
-    with tempfile.TemporaryDirectory() as tmpdirname:
-        print(f"Created temporary directory at {tmpdirname}")
+    if sorted_dir is None:
+        # Create a temporary directory
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            print(f"temporary directory: {tmpdirname}")
+            print('-------------------------------------------------------')
 
-        # Change to the temporary directory
-        os.chdir(tmpdirname)
+            # Run sort_dicoms
+            print("\n[step 1] ... Running Sorting dicoms ...\n")
+            run_command(f'dcmSort.sh {dicoms_dir} {tmpdirname}')
 
-        # Run sort_dicoms
-        print("/n[step 1] ... Running Sorting dicoms .../n")
-        run_command(f'dcmSort.sh {dicoms_dir} {tmpdirname}')
+            # Run sorted2bids
+            sorted2bids(tmpdirname)
+    else:
+        sorted2bids(sorted_dir)
 
-        # Run sorted2bids
-        sorted2bids(tmpdirname)
+    # Run validate_bids
+    validate_bids()
 
-        # Run validate_bids
-        validate_bids()
-
-        # Print validate_bids output
-        with open(os.path.join(bids_dir, 'bids_validator_output.txt'), 'r') as file:
-            print(file.read())
+    # Print validate_bids output
+    with open(os.path.join(bids_dir, 'bids_validator_output.txt'), 'r') as file:
+        print(file.read())
         
-        elapsed_time = time.time() - start_time
-        minutes, seconds = divmod(elapsed_time, 60)
-        print(f"Workflow completed successfully in {minutes:.0f} minutes and {seconds:.0f} seconds.")
+    elapsed_time = time.time() - start_time
+    minutes, seconds = divmod(elapsed_time, 60)
+    print(f"Workflow completed successfully in {minutes:.0f} minutes and {seconds:.0f} seconds.")
+    print('-------------------------------------------------------')
 
 if __name__ == "__main__":
     main()
