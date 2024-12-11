@@ -60,11 +60,11 @@ def run_command(command):
 
 # Workflow steps
 def sorted2bids(tmpdirname):
-    print("Running Sorted dicoms to BIDS ...")
+    print("/n[step 2] ... Running Sorted dicoms to BIDS .../n")
     run_command(f"mpn_sorted2bids.sh -in {tmpdirname} -id {sub} -ses {ses} -o {bids_dir}")
 
 def validate_bids():
-    print("Running BIDS validator ...")
+    print("/n[step 3] ... Running BIDS validator .../n")
     command = f'deno run --allow-write -ERN jsr:@bids/validator {bids_dir} --ignoreWarnings --outfile {bids_dir}/bids_validator_output.txt'
     print(f"Running command: {command}")
     run_command(command)
@@ -81,7 +81,7 @@ def main():
         os.chdir(tmpdirname)
 
         # Run sort_dicoms
-        print("Running Sorting dicoms ...")
+        print("/n[step 1] ... Running Sorting dicoms .../n")
         run_command(f'dcmSort.sh {dicoms_dir} {tmpdirname}')
 
         # Run sorted2bids

@@ -185,23 +185,22 @@ bids=(
 )
 
 origDWI=(
-"*dwi_acq_multib_38dir_AP_acc9_SBRef"
-"*dwi_acq_multib_38dir_AP_acc9"
-"*dwi_acq_multib_70dir_AP_acc9_SBRef"
-"*dwi_acq_multib_70dir_AP_acc9"
-"*dwi_acq_b0_PA_SBRef"
+  "*dwi_acq_b0_PA"
+  "*dwi_acq_b0_PA_SBRef"
+  "*dwi_acq_multib_38dir_AP_acc9"
+  "*dwi_acq_multib_38dir_AP_acc9_SBRef"
+  "*dwi_acq_multib_70dir_AP_acc9"
+  "*dwi_acq_multib_70dir_AP_acc9_SBRef"
 )
 
 bidsDWI=(
-acq-multib38_dir-AP_sbref
-acq-multib38_dir-AP_dwi
-acq-multib70_dir-AP_sbref
-acq-multib70_dir-AP_dwi
-acq-b0_dir-PA_sbref
+  acq-b0_dir-PA_dwi
+  acq-b0_dir-PA_sbref
+  acq-multib38_dir-AP_sbref
+  acq-multib38_dir-AP_dwi
+  acq-multib70_dir-AP_sbref
+  acq-multib70_dir-AP_dwi
 )
-
-# Remove the following acquisition
-#"*dwi_acq_b0_PA" acq-b0_dir-PA_dwi
 
 #-----------------------------------------------------------------------------------------------
 #Create BIDS/subj_dir
