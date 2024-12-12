@@ -159,29 +159,71 @@ here=$(pwd)
 orig=(
     "*anat-T1w_acq_mprage_0.8mm_CSptx"
     "*fmap-b1_tra_p2"
+    "*fmap-b1_acq-sag_p2"
     "*fmap-fmri_acq-mbep2d_SE_19mm_dir-AP"
     "*fmap-fmri_acq-mbep2d_SE_19mm_dir-PA"
     "*func-cloudy_acq-ep2d_MJC_19mm"
     "*func-cross_acq-ep2d_MJC_19mm"
+    "*func-semphon1_acq-mbep2d_ME_19mm"
+    "*func-semphon2_acq-mbep2d_ME_19mm"
     "*anat-T1w_acq-mp2rage_0.7mm_CSptx_INV1"
     "*anat-T1w_acq-mp2rage_0.7mm_CSptx_INV2"
     "*anat-T1w_acq-mp2rage_0.7mm_CSptx_T1_Images"
     "*anat-T1w_acq-mp2rage_0.7mm_CSptx_UNI_Images"
     "*anat-T1w_acq-mp2rage_0.7mm_CSptx_UNI-DEN"
+    "*anat-flair_acq-0p7iso_UPAdia"
+    "*Romeo_Mask_anat-T2star_acq-me_gre_0.7iso_ASPIRE"
+    "*Aspire_M_anat-T2star_acq-me_gre_0.7iso_ASPIRE"
+    "*Aspire_P_anat-T2star_acq-me_gre_0.7iso_ASPIRE"
+    "*EchoCombined_anat-T2star_acq-me_gre_0.7iso_ASPIRE"
+    "*T2star_anat-T2star_acq-me_gre_0.7iso_ASPIRE"
+    "*Romeo_P_anat-T2star_acq-me_gre_0.7iso_ASPIRE"
+    "*Romeo_B0_anat-T2star_acq-me_gre_0.7iso_ASPIRE"
+    "*sensitivity_corrected_mag_anat-T2star_acq-me_gre_0.7iso_ASPIRE"
+    "*CLEAR-SWI_anat-T2star_acq-me_gre_0.7iso_ASPIRE"
+    "*anat-mtw_acq-MTON_07mm"
+    "*anat-mtw_acq-MTOFF_07mm"
+    "*anat-mtw_acq-T1w_07mm"
+    "*anat-nm_acq-MTboost_sag_0.55mm"
+    "*anat-angio_acq-tof_03mm_inplane"
+    "*anat-angio_acq-tof_03mm_inplane_MIP_SAG"
+    "*anat-angio_acq-tof_03mm_inplane_MIP_COR"
+    "*anat-angio_acq-tof_03mm_inplane_MIP_TRA"
 )
 
 bids=(
     T1w
-    acq-anat_TB1TFL
+    acq-anat_chunk-tra_TB1TFL
+    acq-anat_chunk-sag_TB1TFL
     dir-AP_epi
     dir-PA_epi
     task-cloudy_bold
     task-cross_bold
+    task-semphon1_bold
+    task-semphon2_bold
     inv-1_MP2RAGE
     inv-2_MP2RAGE
     T1map
     UNIT1
     acq-DEN_UNIT1
+    FLAIR
+    acq-Romeo_T2starw
+    acq-AspireM_T2starw
+    acq-AspireP_T2starw
+    acq-EchoCombined_T2starw
+    acq-T2star_T2starw
+    acq-RomeoP_T2starw
+    acq-RomeoB0_T2starw
+    acq-SensitivityCorrectedMag_T2starw
+    acq-ClearSWI_T2starw
+    mt-on_MTR
+    mt-off_MTR
+    acq-MTR_T1w
+    acq-MTboostNM1_MWFmap
+    acq-TOF_angio
+    acq-TOFMIPSAG_angio
+    acq-TOFMIPCOR_angio
+    acq-TOFMIPTRA_angio
 )
 
 origDWI=(
@@ -196,10 +238,10 @@ origDWI=(
 bidsDWI=(
   acq-b0_dir-PA_dwi
   acq-b0_dir-PA_sbref
-  acq-multib38_dir-AP_sbref
   acq-multib38_dir-AP_dwi
-  acq-multib70_dir-AP_sbref
+  acq-multib38_dir-AP_sbref
   acq-multib70_dir-AP_dwi
+  acq-multib70_dir-AP_sbref
 )
 
 #-----------------------------------------------------------------------------------------------
@@ -247,8 +289,9 @@ for i in {1..3}; do
     done
 done
 
-# REPLACE "_sbref_ph" with "part-phase_bold"
+# REPLACE "_ph" with "part-phase"
 for func in $(ls "$BIDS"/func/*"bold_ph"*); do mv ${func} ${func/bold_ph/part-phase_bold}; done
+for mtr in $(ls "$BIDS"/anat/*"MTR_ph"*); do mv ${mtr} ${mtr/MTR_ph/part-phase_MTR}; done
 
 # REMOVE the run-?
 for func in $(ls "$BIDS"/func/*"_run-"*); do mv ${func} ${func/_run-?/}; done
@@ -258,10 +301,10 @@ rm "$BIDS"/anat/*MP2RAGE.bv*
 
 Info "Organize TB1TFL acquisitions"
 TB1TFL=(acq-famp_run-1_TB1TFL acq-anat_run-1_TB1TFL acq-famp_run-2_TB1TFL acq-anat_run-2_TB1TFL)
-for i in {1..4}; do
-  for b1 in $(ls "$BIDS"/fmap/*"acq-anat_run-${i}_TB1TFL"*); do
-  mv ${b1} ${b1/acq-anat_run-${i}_TB1TFL/${TB1TFL[$((i-1))]}};
-  done
+for b1 in $(ls "$BIDS"/fmap/*"run-2_TB1TFL"*); do mv ${b1} ${b1/run-2_/}; done
+for b1 in $(ls "$BIDS"/fmap/*"run-1_TB1TFL"*); do
+b1_famp=$(echo "$b1" | sed -e 's/run-1_//' -e 's/acq-anat/acq-famp/')
+mv ${b1} ${b1_famp}
 done
 
 # -----------------------------------------------------------------------------------------------
@@ -296,6 +339,7 @@ done
 # Moving files to their correct directory location
 if ls "$BIDS"/*b0* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*b0* "$BIDS"/dwi; fi
 if ls "$BIDS"/*sbref* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*sbref* "$BIDS"/dwi; fi
+if ls "$BIDS"/*dwi.* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*dwi.* "$BIDS"/dwi; fi
 if ls "$BIDS"/*epi* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*epi* "$BIDS"/fmap; fi
 if ls "$BIDS"/*angio* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*angio* "$BIDS"/anat; fi
 if ls "$BIDS"/*MTR* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*MTR* "$BIDS"/anat; fi
@@ -309,6 +353,7 @@ for dwi in $(ls "$BIDS"/dwi/*"acq-"*"_dir-"*"_run-2_dwi"*); do mv $dwi ${dwi/run
 
 Info "REPLACE \"_sbref_ph\" with \"_part-phase_sbref\""
 for dwi in $(ls "$BIDS"/dwi/*"_sbref_ph"*); do mv $dwi ${dwi/_sbref_ph/_part-phase_sbref}; done
+for dwi in $(ls "$BIDS"/dwi/*"_dwi_ph"*); do mv $dwi ${dwi/_dwi_ph/_part-phase_dwi}; done
 
 # -----------------------------------------------------------------------------------------------
 # Add Units to the phase files
@@ -343,6 +388,8 @@ if [ ! -f "$bidsignore" ]; then echo -e "participants_7t2bids.tsv\nbids_validato
 participants_tsv="$BIDS_DIR"/participants.tsv
 # Check if file exist
 if [ ! -f "$participants_tsv" ]; then echo -e "participant_id\tsession_id\tsite\tgroup" > "$participants_tsv"; fi
+# Remove existing entry if it exists
+grep -v -P "^sub-${Subj}\t${SES/ses-/}" "$participants_tsv" > "${participants_tsv}.tmp" && mv "${participants_tsv}.tmp" "$participants_tsv"
 # Add information about subject
 echo -e "sub-${Subj}\t${SES/ses-/}\tMontreal_SiemmensTerra7T\tHealthy" >> "$participants_tsv"
 
@@ -352,8 +399,22 @@ gitrepo=$(dirname $(dirname $(realpath "$0")))
 
 # Copy json files to the BIDS directory
 if [ ! -f "$BIDS_DIR"/participants.json ]; then cp -v "$gitrepo"/participants.json "$BIDS_DIR"/participants.json; fi
-if [ ! -f "$BIDS_DIR"/task-cross_bold.json ]; then cp -v "$gitrepo"/task-cross_bold.json "$BIDS_DIR"/task-cross_bold.json; fi
-if [ ! -f "$BIDS_DIR"/task-cloudy_bold.json ]; then cp -v "$gitrepo"/task-cloudy_bold.json "$BIDS_DIR"/task-cloudy_bold.json; fi
+
+
+# Add the task jsons
+tasks_protocols=(func-cloudy_acq-ep2d_MJC_19mm func-cross_acq-ep2d_MJC_19mm func-semphon1_acq-mbep2d_ME_19mm func-semphon2_acq-mbep2d_ME_19mm)
+tasks=(cross cloudy semphon1 semphon2)
+for i in ${!tasks[@]}; do
+
+    if [ ! -f "$BIDS_DIR"/task-${tasks[$i]}.json ]; then 
+    # Create task json files
+    cp "$gitrepo"/task-template_bold.json "$BIDS_DIR"/task-${tasks[$i]}_bold.json
+    # Replace strings
+    sed -i "s/PROTOCOL_NAME/${tasks_protocols[$i]}/g" "$BIDS_DIR"/task-${tasks[$i]}_bold.json
+    sed -i "s/TASK_NAME/${tasks[$i]}/g" "$BIDS_DIR"/task-${tasks[$i]}_bold.json
+    fi
+  
+done
 
 # Copy the data_set_description.json file to the BIDS directory
 if [ ! -f "$BIDS_DIR"/dataset_description.json ]; then cp -v "$gitrepo"/dataset_description.json "$BIDS_DIR"/dataset_description.json; fi
@@ -367,6 +428,9 @@ echo -e "This dataset was provided by the Montreal Paris Neurobanque initiative.
 # -----------------------------------------------------------------------------------------------
 # Go back to initial directory
 cd "$here"
+
+# Remove any tmp files if any
+if ls "${BIDS}"/tmp* 1> /dev/null 2>&1; then cmd rm "$BIDS"/tmp; fi
 
 Info "Remember to validate your BIDS directory:
       http://bids-standard.github.io/bids-validator/"

@@ -58,15 +58,16 @@ print(f'Session: {ses}')
 print(f'dicoms directory:    {dicoms_dir}')
 print(f'bids directory:      {bids_dir}')
 
-# Set workflow
+# Function to run a command
 def run_command(command):
     try:
         print(f"Running command: {command}")
         subprocess.run(command.split(), check=True)
     except subprocess.CalledProcessError as e:
-        print(f"Error occurred while running command: {command}. Exception: {e}")
-        print(e)
-        raise
+        print(f"Error occurred while running command: Exception: {e}")
+    #     print(f"Command failed with error code {e.returncode}")
+    #     print(f"Stdout: {e.stdout}")
+    #     print(f"Stderr: {e.stderr}")
 
 # Workflow steps
 def sorted2bids(tmpdirname):
@@ -74,8 +75,9 @@ def sorted2bids(tmpdirname):
     run_command(f'mpn_sorted2bids.sh -in {tmpdirname} -id {sub} -ses {ses} -bids {bids_dir}')
 
 def validate_bids():
-    print("\n[step 3] ... Running BIDS validator ...\n")
-    run_command(f'deno run --allow-write -ERN jsr:@bids/validator {bids_dir} --ignoreWarnings --outfile {bids_dir}/bids_validator_output.txt')
+    print("Running BIDS validator ...")
+    command = f'deno run --allow-write -ERN jsr:@bids/validator {bids_dir} --ignoreWarnings --outfile {bids_dir}/bids_validator_output.txt'
+    run_command(command)
 
 def main():
     # Set a timer
