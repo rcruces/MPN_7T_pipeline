@@ -166,21 +166,22 @@ orig=(
     "*func-cross_acq-ep2d_MJC_19mm"
     "*func-semphon1_acq-mbep2d_ME_19mm"
     "*func-semphon2_acq-mbep2d_ME_19mm"
+    "*func-rsfmri_acq-multiE_1.9mm"
     "*anat-T1w_acq-mp2rage_0.7mm_CSptx_INV1"
     "*anat-T1w_acq-mp2rage_0.7mm_CSptx_INV2"
     "*anat-T1w_acq-mp2rage_0.7mm_CSptx_T1_Images"
     "*anat-T1w_acq-mp2rage_0.7mm_CSptx_UNI_Images"
     "*anat-T1w_acq-mp2rage_0.7mm_CSptx_UNI-DEN"
     "*anat-flair_acq-0p7iso_UPAdia"
-    "*Romeo_Mask_anat-T2star_acq-me_gre_0.7iso_ASPIRE"
-    "*Aspire_M_anat-T2star_acq-me_gre_0.7iso_ASPIRE"
-    "*Aspire_P_anat-T2star_acq-me_gre_0.7iso_ASPIRE"
-    "*EchoCombined_anat-T2star_acq-me_gre_0.7iso_ASPIRE"
-    "*T2star_anat-T2star_acq-me_gre_0.7iso_ASPIRE"
-    "*Romeo_P_anat-T2star_acq-me_gre_0.7iso_ASPIRE"
-    "*Romeo_B0_anat-T2star_acq-me_gre_0.7iso_ASPIRE"
-    "*sensitivity_corrected_mag_anat-T2star_acq-me_gre_0.7iso_ASPIRE"
-    "*CLEAR-SWI_anat-T2star_acq-me_gre_0.7iso_ASPIRE"
+    "*Romeo_Mask_anat-T2star_acq-me_gre_0c7iso_ASPIRE"
+    "*Aspire_M_anat-T2star_acq-me_gre_0*7iso_ASPIRE"
+    "*Aspire_P_anat-T2star_acq-me_gre_0*7iso_ASPIRE"
+    "*EchoCombined_anat-T2star_acq-me_gre_0*7iso_ASPIRE"
+    "*T2star_anat-T2star_acq-me_gre_0*7iso_ASPIRE"
+    "*Romeo_P_anat-T2star_acq-me_gre_0*7iso_ASPIRE"
+    "*Romeo_B0_anat-T2star_acq-me_gre_0*7iso_ASPIRE"
+    "*sensitivity_corrected_mag_anat-T2star_acq-me_gre_0*7iso_ASPIRE"
+    "*CLEAR-SWI_anat-T2star_acq-me_gre_0*7iso_ASPIRE"
     "*anat-mtw_acq-MTON_07mm"
     "*anat-mtw_acq-MTOFF_07mm"
     "*anat-mtw_acq-T1w_07mm"
@@ -201,6 +202,7 @@ bids=(
     task-cross_bold
     task-semphon1_bold
     task-semphon2_bold
+    task-rest_bold
     inv-1_MP2RAGE
     inv-2_MP2RAGE
     T1map
@@ -280,6 +282,8 @@ if ls "$BIDS"/*T1* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*T1* "$BIDS"/anat; fi
 if ls "$BIDS"/*T2* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*T2* "$BIDS"/anat; fi
 if ls "$BIDS"/*fieldmap* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*fieldmap* "$BIDS"/fmap; fi
 if ls "$BIDS"/*TB1TFL* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*TB1TFL* "$BIDS"/fmap; fi
+if ls "$BIDS"/*FLAIR* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*FLAIR* "$BIDS"/anat; fi
+if ls "$BIDS"/*MWFmap* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*MWFmap* "$BIDS"/anat; fi
 
 # Rename echos: echo-1_bold.nii.gz
 for i in {1..3}; do
@@ -289,9 +293,18 @@ for i in {1..3}; do
     done
 done
 
+# Rename T2starw: echo-?_T2starw_.nii.gz
+for i in {1..5}; do
+    str="T2starw_e${i}"
+    for f in ${BIDS}/anat/*${str}*; do
+        mv $f ${f/${str}/echo-${i}_T2starw}
+    done
+done
+
 # REPLACE "_ph" with "part-phase"
 for func in $(ls "$BIDS"/func/*"bold_ph"*); do mv ${func} ${func/bold_ph/part-phase_bold}; done
 for mtr in $(ls "$BIDS"/anat/*"MTR_ph"*); do mv ${mtr} ${mtr/MTR_ph/part-phase_MTR}; done
+for t2x in $(ls "$BIDS"/anat/*"T2starw_ph"*); do mv ${t2x} ${t2x/T2starw_ph/part-phase_T2starw}; done
 
 # REMOVE the run-?
 for func in $(ls "$BIDS"/func/*"_run-"*); do mv ${func} ${func/_run-?/}; done
@@ -300,12 +313,12 @@ Info "Remove MP2RAGE bval and bvecs"
 rm "$BIDS"/anat/*MP2RAGE.bv*
 
 Info "Organize TB1TFL acquisitions"
-TB1TFL=(acq-famp_run-1_TB1TFL acq-anat_run-1_TB1TFL acq-famp_run-2_TB1TFL acq-anat_run-2_TB1TFL)
-for b1 in $(ls "$BIDS"/fmap/*"run-2_TB1TFL"*); do mv ${b1} ${b1/run-2_/}; done
-for b1 in $(ls "$BIDS"/fmap/*"run-1_TB1TFL"*); do
-b1_famp=$(echo "$b1" | sed -e 's/run-1_//' -e 's/acq-anat/acq-famp/')
-mv ${b1} ${b1_famp}
-done
+# TB1TFL=(acq-famp_run-1_TB1TFL acq-anat_run-1_TB1TFL acq-famp_run-2_TB1TFL acq-anat_run-2_TB1TFL)
+# for b1 in $(ls "$BIDS"/fmap/*"run-2_TB1TFL"*); do mv ${b1} ${b1/run-2_/}; done
+# for b1 in $(ls "$BIDS"/fmap/*"run-1_TB1TFL"*); do
+# b1_famp=$(echo "$b1" | sed -e 's/run-1_//' -e 's/acq-anat/acq-famp/')
+# mv ${b1} ${b1_famp}
+# done
 
 # -----------------------------------------------------------------------------------------------
 Info "DWI acquisitions"
