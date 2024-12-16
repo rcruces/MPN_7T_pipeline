@@ -3,8 +3,8 @@
 	"ManufacturersModelName": "Terra",
 	"ProcedureStepDescription": "Montreal Paris Neurobanque",
 	"BodyPartExamined": "BRAIN",
-	"ProtocolName": "func-cloudy_acq-ep2d_MJC_19mm",
+	"ProtocolName": "PROTOCOL_NAME",
 	"MagneticFieldStrength": 7.0,
-	"TaskName": "rest-cloudy",
+	"TaskName": "TASK_NAME",
 	"Instructions": "eyes closed"
 }

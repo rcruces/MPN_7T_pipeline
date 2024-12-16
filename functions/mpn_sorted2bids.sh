@@ -194,8 +194,8 @@ orig=(
 
 bids=(
     T1w
-    acq-anat_chunk-tra_TB1TFL
-    acq-anat_chunk-sag_TB1TFL
+    acq-anatTra_TB1TFL
+    acq-anatSag_TB1TFL
     dir-AP_epi
     dir-PA_epi
     task-cloudy_bold
@@ -256,16 +256,17 @@ cmd cd $SUBJ_DIR
 # Warning lenght
 n=$((${#orig[@]} - 1))
 for ((k=0; k<=n; k++)); do
-  N=$(ls -d ${orig[k]} | wc -l)
+  N=$(ls -d ${orig[k]} 2>/dev/null | wc -l) # make it quiet
   if [ "$N" -eq 0 ]; then
     Warn "No directories were found with the following name: ${orig[k]}"
   elif [ "$N" -gt 1 ]; then
     Names=($(ls -d ${orig[k]}))
     for ((i = 1; i <= N; i++)); do
        nii=$(echo ${Names[((i-2))]} | awk -F '_' '{print $1 "_" $2}')
-       nom="${id}${bids[k]}"
-       dcm=$(echo ${nom##*_})
-       nom=$(echo "${nom/$dcm/}run-${i}_${dcm}")
+       acq=$(echo ${bids[k]} | grep -oP '(?<=acq-)[^_]+')
+       # Check if acq_string is not empty
+       if [[ -n "$acq" ]]; then acq_string="acq-${acq}_"; else acq_string=""; fi
+       nom="${id}${acq_string}run-${i}_${bids[k]/${acq_string}/}"
        cmd dcm2niix -z y -b y -o "$BIDS" -f "$nom" ${nii}${orig[k]}
     done
   elif [ "$N" -eq 1 ]; then
@@ -284,6 +285,8 @@ if ls "$BIDS"/*fieldmap* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*fieldmap* "$BID
 if ls "$BIDS"/*TB1TFL* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*TB1TFL* "$BIDS"/fmap; fi
 if ls "$BIDS"/*FLAIR* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*FLAIR* "$BIDS"/anat; fi
 if ls "$BIDS"/*MWFmap* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*MWFmap* "$BIDS"/anat; fi
+if ls "$BIDS"/*angio* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*angio* "$BIDS"/anat; fi
+if ls "$BIDS"/*MTR* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*MTR* "$BIDS"/anat; fi
 
 # Rename echos: echo-1_bold.nii.gz
 for i in {1..3}; do
@@ -305,6 +308,7 @@ done
 for func in $(ls "$BIDS"/func/*"bold_ph"*); do mv ${func} ${func/bold_ph/part-phase_bold}; done
 for mtr in $(ls "$BIDS"/anat/*"MTR_ph"*); do mv ${mtr} ${mtr/MTR_ph/part-phase_MTR}; done
 for t2x in $(ls "$BIDS"/anat/*"T2starw_ph"*); do mv ${t2x} ${t2x/T2starw_ph/part-phase_T2starw}; done
+for t1w in $(ls "$BIDS"/anat/*"T1w_ph"*); do mv ${t1w} ${t1w/T1w_ph/part-phase_T1w}; done
 
 # REMOVE the run-?
 for func in $(ls "$BIDS"/func/*"_run-"*); do mv ${func} ${func/_run-?/}; done
@@ -313,12 +317,26 @@ Info "Remove MP2RAGE bval and bvecs"
 rm "$BIDS"/anat/*MP2RAGE.bv*
 
 Info "Organize TB1TFL acquisitions"
-# TB1TFL=(acq-famp_run-1_TB1TFL acq-anat_run-1_TB1TFL acq-famp_run-2_TB1TFL acq-anat_run-2_TB1TFL)
-# for b1 in $(ls "$BIDS"/fmap/*"run-2_TB1TFL"*); do mv ${b1} ${b1/run-2_/}; done
-# for b1 in $(ls "$BIDS"/fmap/*"run-1_TB1TFL"*); do
-# b1_famp=$(echo "$b1" | sed -e 's/run-1_//' -e 's/acq-anat/acq-famp/')
-# mv ${b1} ${b1_famp}
-# done
+# Check if there are files found
+if [ ${#files[@]} -gt 0 ]; then
+    # Loop over the files in pairs
+    for ((i=0; i<${#files[@]}; i+=2)); do
+        file1="${files[$i]}"
+        file2="${files[$i+1]}"
+
+        # Extract sequence type and run number from file names
+        seq_type1=$(echo "$file1" | grep -oP "acq-\K\w+")
+        run_num1=$(echo "$file1" | grep -oP "run-\K\d+")
+        seq_type2=$(echo "$file2" | grep -oP "acq-\K\w+")
+        run_num2=$(echo "$file2" | grep -oP "run-\K\d+")
+
+        # Rename files based on their sequence type and run number
+        if [ "$run_num1" -eq 1 ]; then
+            mv "$file1" "acq-sfam${seq_type1_run}-$(($i/2+1))_TB1TFL"
+            mv "$file2" "acq-anat${seq_type2_run}-$(($i/2+1))_TB1TFL"
+        fi
+    done
+fi
 
 # -----------------------------------------------------------------------------------------------
 Info "DWI acquisitions"
@@ -354,8 +372,6 @@ if ls "$BIDS"/*b0* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*b0* "$BIDS"/dwi; fi
 if ls "$BIDS"/*sbref* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*sbref* "$BIDS"/dwi; fi
 if ls "$BIDS"/*dwi.* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*dwi.* "$BIDS"/dwi; fi
 if ls "$BIDS"/*epi* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*epi* "$BIDS"/fmap; fi
-if ls "$BIDS"/*angio* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*angio* "$BIDS"/anat; fi
-if ls "$BIDS"/*MTR* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*MTR* "$BIDS"/anat; fi
 if ls "$BIDS"/anat/*ROI* 1> /dev/null 2>&1; then cmd rm "$BIDS"/anat/*ROI*; fi
 
 Info "REMOVE run-1 string from new 7T DWI acquisition"
@@ -373,6 +389,17 @@ for dwi in $(ls "$BIDS"/dwi/*"_dwi_ph"*); do mv $dwi ${dwi/_dwi_ph/_part-phase_d
 for file in "$BIDS"/*/*phase*json; do
   # Add the key "Units": "arbitrary" to the JSON file
   jq '. + {"Units": "arbitrary"}' "$file" > tmp.$$.json && mv tmp.$$.json "$file"
+done
+
+# -----------------------------------------------------------------------------------------------
+# Add MTState to the mt-off scans
+for file in "$BIDS"/*/*mt-off*json; do
+  # Add the key "MTState": "False" to the JSON file
+  jq '. + {"MTState": false}' "$file" > tmp.$$.json && mv tmp.$$.json "$file"
+done
+for file in "$BIDS"/*/*mt-on*json; do
+  # Add the key "MTState": "False" to the JSON file
+  jq '. + {"MTState": true}' "$file" > tmp.$$.json && mv tmp.$$.json "$file"
 done
 
 # -----------------------------------------------------------------------------------------------
@@ -400,11 +427,19 @@ if [ ! -f "$bidsignore" ]; then echo -e "participants_7t2bids.tsv\nbids_validato
 # Add the new subject to the participants.tsv file
 participants_tsv="$BIDS_DIR"/participants.tsv
 # Check if file exist
-if [ ! -f "$participants_tsv" ]; then echo -e "participant_id\tsession_id\tsite\tgroup" > "$participants_tsv"; fi
+if [ ! -f "$participants_tsv" ]; then echo -e "participant_id\tsite\tgroup" > "$participants_tsv"; fi
 # Remove existing entry if it exists
-grep -v -P "^sub-${Subj}\t${SES/ses-/}" "$participants_tsv" > "${participants_tsv}.tmp" && mv "${participants_tsv}.tmp" "$participants_tsv"
+grep -v -P "^sub-${Subj}" "$participants_tsv" > "${participants_tsv}.tmp" && mv "${participants_tsv}.tmp" "$participants_tsv"
 # Add information about subject
-echo -e "sub-${Subj}\t${SES/ses-/}\tMontreal_SiemmensTerra7T\tHealthy" >> "$participants_tsv"
+echo -e "sub-${Subj}\tMontreal_SiemmensTerra7T\tHealthy" >> "$participants_tsv"
+
+# create a sessions tsv
+sessions_tsv="${BIDS_DIR}/sub-${Subj}/sub-${Subj}_sessions.tsv"
+if [ ! -f "$sessions_tsv" ]; then echo -e "session_id" > "$sessions_tsv"; fi
+# Remove existing entry if it exists
+grep -v -P "^${SES}" "$sessions_tsv" > "${sessions_tsv}.tmp" && mv "${sessions_tsv}.tmp" "$sessions_tsv"
+# Add information about subject
+echo -e "${SES}" >> "$sessions_tsv"
 
 # -----------------------------------------------------------------------------------------------
 # Get the repository path
@@ -413,12 +448,10 @@ gitrepo=$(dirname $(dirname $(realpath "$0")))
 # Copy json files to the BIDS directory
 if [ ! -f "$BIDS_DIR"/participants.json ]; then cp -v "$gitrepo"/participants.json "$BIDS_DIR"/participants.json; fi
 
-
 # Add the task jsons
 tasks_protocols=(func-cloudy_acq-ep2d_MJC_19mm func-cross_acq-ep2d_MJC_19mm func-semphon1_acq-mbep2d_ME_19mm func-semphon2_acq-mbep2d_ME_19mm)
-tasks=(cross cloudy semphon1 semphon2)
+tasks=(cross cloudy semphon1 semphon2 rest)
 for i in ${!tasks[@]}; do
-
     if [ ! -f "$BIDS_DIR"/task-${tasks[$i]}.json ]; then 
     # Create task json files
     cp "$gitrepo"/task-template_bold.json "$BIDS_DIR"/task-${tasks[$i]}_bold.json
@@ -426,7 +459,6 @@ for i in ${!tasks[@]}; do
     sed -i "s/PROTOCOL_NAME/${tasks_protocols[$i]}/g" "$BIDS_DIR"/task-${tasks[$i]}_bold.json
     sed -i "s/TASK_NAME/${tasks[$i]}/g" "$BIDS_DIR"/task-${tasks[$i]}_bold.json
     fi
-  
 done
 
 # Copy the data_set_description.json file to the BIDS directory
@@ -443,7 +475,7 @@ echo -e "This dataset was provided by the Montreal Paris Neurobanque initiative.
 cd "$here"
 
 # Remove any tmp files if any
-if ls "${BIDS}"/tmp* 1> /dev/null 2>&1; then cmd rm "$BIDS"/tmp; fi
+if ls "${BIDS}"/tmp* 1> /dev/null 2>&1; then cmd rm "$BIDS"/tmp*; fi
 
 Info "Remember to validate your BIDS directory:
       http://bids-standard.github.io/bids-validator/"
