@@ -173,7 +173,7 @@ orig=(
     "*anat-T1w_acq-mp2rage_0.7mm_CSptx_UNI_Images"
     "*anat-T1w_acq-mp2rage_0.7mm_CSptx_UNI-DEN"
     "*anat-flair_acq-0p7iso_UPAdia"
-    "*Romeo_Mask_anat-T2star_acq-me_gre_0c7iso_ASPIRE"
+    "*Romeo_Mask_anat-T2star_acq-me_gre_0*7iso_ASPIRE"
     "*Aspire_M_anat-T2star_acq-me_gre_0*7iso_ASPIRE"
     "*Aspire_P_anat-T2star_acq-me_gre_0*7iso_ASPIRE"
     "*EchoCombined_anat-T2star_acq-me_gre_0*7iso_ASPIRE"
@@ -209,23 +209,23 @@ bids=(
     UNIT1
     acq-DEN_UNIT1
     FLAIR
-    acq-Romeo_T2starw
-    acq-AspireM_T2starw
-    acq-AspireP_T2starw
+    acq-mask_T2starw
+    acq-aspire_T2starw
+    acq-aspire_T2starw
     acq-EchoCombined_T2starw
-    acq-T2star_T2starw
-    acq-RomeoP_T2starw
-    acq-RomeoB0_T2starw
+    T2starw
+    acq-romeo_S0map
+    acq-romeoB0_S0map
     acq-SensitivityCorrectedMag_T2starw
-    acq-ClearSWI_T2starw
+    acq-clearSWI_T2starmap
     mt-on_MTR
     mt-off_MTR
     acq-MTR_T1w
-    acq-MTboostNM1_MWFmap
-    acq-TOF_angio
-    acq-TOFMIPSAG_angio
-    acq-TOFMIPCOR_angio
-    acq-TOFMIPTRA_angio
+    acq-neuromelanin_MWFmap
+    acq-tof_angio
+    acq-tofSag_angio
+    acq-tofCor_angio
+    acq-tofTra_angio
 )
 
 origDWI=(
@@ -274,7 +274,6 @@ for ((k=0; k<=n; k++)); do
   fi
 done
 
-# move files to their corresponding directory
 # Moving files to their correct directory location
 if ls "$BIDS"/*MP2RAGE* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*MP2RAGE* "$BIDS"/anat; fi
 if ls "$BIDS"/*UNIT1* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*UNIT1* "$BIDS"/anat; fi
@@ -283,6 +282,7 @@ if ls "$BIDS"/*T1* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*T1* "$BIDS"/anat; fi
 if ls "$BIDS"/*T2* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*T2* "$BIDS"/anat; fi
 if ls "$BIDS"/*fieldmap* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*fieldmap* "$BIDS"/fmap; fi
 if ls "$BIDS"/*TB1TFL* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*TB1TFL* "$BIDS"/fmap; fi
+if ls "$BIDS"/*S0map* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*S0map* "$BIDS"/fmap; fi
 if ls "$BIDS"/*FLAIR* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*FLAIR* "$BIDS"/anat; fi
 if ls "$BIDS"/*MWFmap* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*MWFmap* "$BIDS"/anat; fi
 if ls "$BIDS"/*angio* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*angio* "$BIDS"/anat; fi
@@ -298,17 +298,19 @@ done
 
 # Rename T2starw: echo-?_T2starw_.nii.gz
 for i in {1..5}; do
-    str="T2starw_e${i}"
-    for f in ${BIDS}/anat/*${str}*; do
-        mv $f ${f/${str}/echo-${i}_T2starw}
+  for acq in T2starw S0map; do
+    for f in "${BIDS}/anat/"*"${acq}_e${i}"*; do
+      mv "$f" "${f/${acq}_e${i}/echo-${i}_${acq}}"
     done
+  done
 done
 
 # REPLACE "_ph" with "part-phase"
 for func in $(ls "$BIDS"/func/*"bold_ph"*); do mv ${func} ${func/bold_ph/part-phase_bold}; done
 for mtr in $(ls "$BIDS"/anat/*"MTR_ph"*); do mv ${mtr} ${mtr/MTR_ph/part-phase_MTR}; done
-for t2x in $(ls "$BIDS"/anat/*"T2starw_ph"*); do mv ${t2x} ${t2x/T2starw_ph/part-phase_T2starw}; done
+for t2x in $(ls "$BIDS"/anat/*"T2starw_ph"*); do mv ${t2x} ${t2x/T2starw_ph/part-phase_T2starmap}; done
 for t1w in $(ls "$BIDS"/anat/*"T1w_ph"*); do mv ${t1w} ${t1w/T1w_ph/part-phase_T1w}; done
+for S0map in $(ls "$BIDS"/fmap/*"S0map_ph"*); do mv ${S0map} ${S0map/S0map_ph/part-phase_S0map}; done
 
 # REMOVE the run-?
 for func in $(ls "$BIDS"/func/*"_run-"*); do mv ${func} ${func/_run-?/}; done
@@ -317,12 +319,13 @@ Info "Remove MP2RAGE bval and bvecs"
 rm "$BIDS"/anat/*MP2RAGE.bv*
 
 Info "Organize TB1TFL acquisitions"
-# Check if there are files found
-if [ ${#files[@]} -gt 0 ]; then
-    # Loop over the files in pairs
-    for ((i=0; i<${#files[@]}; i+=2)); do
-        file1="${files[$i]}"
-        file2="${files[$i+1]}"
+TB1TFL="${BIDS}/fmap/"*TB1TFL
+# Check if there are TB1TFL found
+if [ ${#TB1TFL[@]} -gt 0 ]; then
+    # Loop over the TB1TFL in pairs
+    for ((i=0; i<${#TB1TFL[@]}; i+=2)); do
+        file1="${TB1TFL[$i]}"
+        file2="${TB1TFL[$i+1]}"
 
         # Extract sequence type and run number from file names
         seq_type1=$(echo "$file1" | grep -oP "acq-\K\w+")
@@ -330,13 +333,16 @@ if [ ${#files[@]} -gt 0 ]; then
         seq_type2=$(echo "$file2" | grep -oP "acq-\K\w+")
         run_num2=$(echo "$file2" | grep -oP "run-\K\d+")
 
-        # Rename files based on their sequence type and run number
+        # Rename TB1TFL based on their sequence type and run number
         if [ "$run_num1" -eq 1 ]; then
             mv "$file1" "acq-sfam${seq_type1_run}-$(($i/2+1))_TB1TFL"
             mv "$file2" "acq-anat${seq_type2_run}-$(($i/2+1))_TB1TFL"
         fi
     done
 fi
+
+# Rename T2starmap
+if ls "$BIDS"/anat/${id}T2starw.* 1> /dev/null 2>&1; then for t2 in "$BIDS"/anat/${id}T2starw.*; do mv $t2 ${t2/T2starw/T2starmap} done; fi
 
 # -----------------------------------------------------------------------------------------------
 Info "DWI acquisitions"
