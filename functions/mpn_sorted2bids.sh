@@ -64,9 +64,6 @@ Info() {
     [[ ${quiet} != TRUE ]] && echo -e "\033[$Col\n[ INFO ]..... $1 \033[0m"
 }
 
-# Source print functions
-dir_functions=$(dirname $(realpath "$0"))
-
 #------------------------------------------------------------------------------#
 #			ARGUMENTS
 # Number of inputs
@@ -167,6 +164,7 @@ orig=(
     "*func-semphon1_acq-mbep2d_ME_19mm"
     "*func-semphon2_acq-mbep2d_ME_19mm"
     "*func-rsfmri_acq-multiE_1.9mm"
+    "*func-rsfmri_acq-mbep2d_ME_19mm"
     "*anat-T1w_acq-mp2rage_0.7mm_CSptx_INV1"
     "*anat-T1w_acq-mp2rage_0.7mm_CSptx_INV2"
     "*anat-T1w_acq-mp2rage_0.7mm_CSptx_T1_Images"
@@ -203,6 +201,7 @@ bids=(
     task-semphon1_bold
     task-semphon2_bold
     task-rest_bold
+    task-rest_bold
     inv-1_MP2RAGE
     inv-2_MP2RAGE
     T1map
@@ -214,8 +213,8 @@ bids=(
     acq-aspire_T2starw
     acq-EchoCombined_T2starw
     T2starw
-    acq-romeo_S0map
-    acq-romeoB0_S0map
+    acq-romeo_T2starw
+    acq-romeoB0_T2starw
     acq-SensitivityCorrectedMag_T2starw
     acq-clearSWI_T2starmap
     mt-on_MTR
@@ -275,74 +274,99 @@ for ((k=0; k<=n; k++)); do
 done
 
 # Moving files to their correct directory location
-if ls "$BIDS"/*MP2RAGE* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*MP2RAGE* "$BIDS"/anat; fi
-if ls "$BIDS"/*UNIT1* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*UNIT1* "$BIDS"/anat; fi
-if ls "$BIDS"/*bold* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*bold* "$BIDS"/func; fi
-if ls "$BIDS"/*T1* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*T1* "$BIDS"/anat; fi
-if ls "$BIDS"/*T2* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*T2* "$BIDS"/anat; fi
-if ls "$BIDS"/*fieldmap* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*fieldmap* "$BIDS"/fmap; fi
-if ls "$BIDS"/*TB1TFL* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*TB1TFL* "$BIDS"/fmap; fi
-if ls "$BIDS"/*S0map* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*S0map* "$BIDS"/fmap; fi
-if ls "$BIDS"/*FLAIR* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*FLAIR* "$BIDS"/anat; fi
-if ls "$BIDS"/*MWFmap* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*MWFmap* "$BIDS"/anat; fi
-if ls "$BIDS"/*angio* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*angio* "$BIDS"/anat; fi
-if ls "$BIDS"/*MTR* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*MTR* "$BIDS"/anat; fi
+if ls "$BIDS"/*MP2RAGE* 1> /dev/null 2>&1; then mv "$BIDS"/*MP2RAGE* "$BIDS"/anat; fi
+if ls "$BIDS"/*UNIT1* 1> /dev/null 2>&1; then mv "$BIDS"/*UNIT1* "$BIDS"/anat; fi
+if ls "$BIDS"/*bold* 1> /dev/null 2>&1; then mv "$BIDS"/*bold* "$BIDS"/func; fi
+if ls "$BIDS"/*T1* 1> /dev/null 2>&1; then mv "$BIDS"/*T1* "$BIDS"/anat; fi
+if ls "$BIDS"/*T2* 1> /dev/null 2>&1; then mv "$BIDS"/*T2* "$BIDS"/anat; fi
+if ls "$BIDS"/*fieldmap* 1> /dev/null 2>&1; then mv "$BIDS"/*fieldmap* "$BIDS"/fmap; fi
+if ls "$BIDS"/*TB1TFL* 1> /dev/null 2>&1; then mv "$BIDS"/*TB1TFL* "$BIDS"/fmap; fi
+if ls "$BIDS"/*FLAIR* 1> /dev/null 2>&1; then mv "$BIDS"/*FLAIR* "$BIDS"/anat; fi
+if ls "$BIDS"/*MWFmap* 1> /dev/null 2>&1; then mv "$BIDS"/*MWFmap* "$BIDS"/anat; fi
+if ls "$BIDS"/*angio* 1> /dev/null 2>&1; then mv "$BIDS"/*angio* "$BIDS"/anat; fi
+if ls "$BIDS"/*MTR* 1> /dev/null 2>&1; then mv "$BIDS"/*MTR* "$BIDS"/anat; fi
 
 # Rename echos: echo-1_bold.nii.gz
+if ls ${BIDS}/func/*bold_e* 1> /dev/null 2>&1; then
 for i in {1..3}; do
     str="bold_e${i}"
     for f in ${BIDS}/func/*${str}*; do
         mv $f ${f/${str}/echo-${i}_bold}
     done
 done
+fi
 
 # Rename T2starw: echo-?_T2starw_.nii.gz
+if ls ${BIDS}/anat/*T2starw_e* 1> /dev/null 2>&1; then
 for i in {1..5}; do
-  for acq in T2starw S0map; do
-    for f in "${BIDS}/anat/"*"${acq}_e${i}"*; do
-      mv "$f" "${f/${acq}_e${i}/echo-${i}_${acq}}"
+    str="T2starw_e${i}"
+    for f in ${BIDS}/anat/*${str}*; do
+        mv $f ${f/${str}/echo-${i}_T2starw}
     done
-  done
 done
+fi
 
 # REPLACE "_ph" with "part-phase"
-for func in $(ls "$BIDS"/func/*"bold_ph"*); do mv ${func} ${func/bold_ph/part-phase_bold}; done
-for mtr in $(ls "$BIDS"/anat/*"MTR_ph"*); do mv ${mtr} ${mtr/MTR_ph/part-phase_MTR}; done
-for t2x in $(ls "$BIDS"/anat/*"T2starw_ph"*); do mv ${t2x} ${t2x/T2starw_ph/part-phase_T2starmap}; done
-for t1w in $(ls "$BIDS"/anat/*"T1w_ph"*); do mv ${t1w} ${t1w/T1w_ph/part-phase_T1w}; done
-for S0map in $(ls "$BIDS"/fmap/*"S0map_ph"*); do mv ${S0map} ${S0map/S0map_ph/part-phase_S0map}; done
+replace_phase_suffix() {
+    local pattern=$1
+    local replacement=$2
+    local dir=$3
 
-# REMOVE the run-?
-for func in $(ls "$BIDS"/func/*"_run-"*); do mv ${func} ${func/_run-?/}; done
+    if ls "$dir"/*"$pattern"* 1> /dev/null 2>&1; then
+        for file in "$dir"/*"$pattern"*; do
+            mv "$file" "${file/$pattern/$replacement}"
+        done
+    fi
+}
 
-Info "Remove MP2RAGE bval and bvecs"
-rm "$BIDS"/anat/*MP2RAGE.bv*
+# Apply replacements
+replace_phase_suffix "bold_ph" "part-phase_bold" "$BIDS/func"
+replace_phase_suffix "MTR_ph" "part-phase_MTR" "$BIDS/anat"
+replace_phase_suffix "T2starw_ph" "part-phase_T2starw" "$BIDS/anat"
+replace_phase_suffix "T1w_ph" "part-phase_T1w" "$BIDS/anat"
 
-Info "Organize TB1TFL acquisitions"
-TB1TFL="${BIDS}/fmap/"*TB1TFL
-# Check if there are TB1TFL found
-if [ ${#TB1TFL[@]} -gt 0 ]; then
-    # Loop over the TB1TFL in pairs
+# remove run-? from echo-?_bold
+if ls "$BIDS"/func/*"_run-"* 1> /dev/null 2>&1; then
+  Info "REMOVE the run-? from func files (echoes)"
+  for func in $(ls "$BIDS"/func/*"_run-"*); do
+    mv "$func" "${func/_run-?/}"
+  done
+fi
+
+if ls "$BIDS"/anat/*MP2RAGE.bv* 1> /dev/null 2>&1; then
+  Info "Remove MP2RAGE bval and bvecs"
+  rm "$BIDS"/anat/*MP2RAGE.bv*
+fi
+
+# Check if there are TB1TFL files
+if ls "${BIDS}/fmap/"*TB1TFL*gz 1> /dev/null 2>&1; then
+    TB1TFL=($(ls "${BIDS}/fmap/"*TB1TFL*gz))
+    Info "Organizing TB1TFL acquisitions"
+
+    # Process files in pairs
     for ((i=0; i<${#TB1TFL[@]}; i+=2)); do
         file1="${TB1TFL[$i]}"
         file2="${TB1TFL[$i+1]}"
+        run_num=$((i / 2 + 1))
 
-        # Extract sequence type and run number from file names
-        seq_type1=$(echo "$file1" | grep -oP "acq-\K\w+")
-        run_num1=$(echo "$file1" | grep -oP "run-\K\d+")
-        seq_type2=$(echo "$file2" | grep -oP "acq-\K\w+")
-        run_num2=$(echo "$file2" | grep -oP "run-\K\d+")
+        # Extract sequence types (anatSag or anatTra) for both files
+        seq_type1=$(basename "$file1" | grep -oP "acq-\K\w+(?=_run)")
+        seq_type2=$(basename "$file2" | grep -oP "acq-\K\w+(?=_run)")
 
-        # Rename TB1TFL based on their sequence type and run number
-        if [ "$run_num1" -eq 1 ]; then
-            mv "$file1" "acq-sfam${seq_type1_run}-$(($i/2+1))_TB1TFL"
-            mv "$file2" "acq-anat${seq_type2_run}-$(($i/2+1))_TB1TFL"
-        fi
+        # Rename both files and their JSON counterparts
+        mv "$file1" "${BIDS}/fmap/${id}acq-${seq_type1/anat/sfam}_run-${run_num}_TB1TFL.nii.gz"
+        mv "$file2" "${BIDS}/fmap/${id}acq-${seq_type2}_run-${run_num}_TB1TFL.nii.gz"
+        mv "${file1/nii.gz/json}" "${BIDS}/fmap/${id}acq-${seq_type1/anat/sfam}_run-${run_num}_TB1TFL.json"
+        mv "${file2/nii.gz/json}" "${BIDS}/fmap/${id}acq-${seq_type2}_run-${run_num}_TB1TFL.json"
     done
 fi
 
 # Rename T2starmap
-if ls "$BIDS"/anat/${id}T2starw.* 1> /dev/null 2>&1; then for t2 in "$BIDS"/anat/${id}T2starw.*; do mv $t2 ${t2/T2starw/T2starmap} done; fi
+if ls "$BIDS"/anat/${id}T2starw.* 1> /dev/null 2>&1; then 
+  for t2 in "$BIDS"/anat/${id}T2starw.*; do 
+    mv $t2 ${t2/T2starw/T2starmap} 
+  done
+fi
 
 # -----------------------------------------------------------------------------------------------
 Info "DWI acquisitions"
@@ -367,28 +391,35 @@ for ((k=0; k<=n; k++)); do
   fi
 done
 
+# Change directory 
 cmd cd "$BIDS"
-for n in $(ls *bval); do Dir=0
-  for i in $(cat $n); do if [[ "$i" == 0.00 ]] || [[ "$i" == 0 ]]; then Dir=$((Dir+1)); else Dir=$((Dir+1)); fi; done
-  for j in ${n/bval/}*; do mv "$j" dwi/${j/NUM/$Dir}; done
-done
 
-# Moving files to their correct directory location
-if ls "$BIDS"/*b0* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*b0* "$BIDS"/dwi; fi
-if ls "$BIDS"/*sbref* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*sbref* "$BIDS"/dwi; fi
-if ls "$BIDS"/*dwi.* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*dwi.* "$BIDS"/dwi; fi
-if ls "$BIDS"/*epi* 1> /dev/null 2>&1; then cmd mv "$BIDS"/*epi* "$BIDS"/fmap; fi
-if ls "$BIDS"/anat/*ROI* 1> /dev/null 2>&1; then cmd rm "$BIDS"/anat/*ROI*; fi
+Info "Moving files to their correct directory location"
+if ls "$BIDS"/*b0* 1> /dev/null 2>&1; then mv "$BIDS"/*b0* "$BIDS"/dwi; fi
+if ls "$BIDS"/*sbref* 1> /dev/null 2>&1; then mv "$BIDS"/*sbref* "$BIDS"/dwi; fi
+if ls "$BIDS"/*dwi.* 1> /dev/null 2>&1; then mv "$BIDS"/*dwi.* "$BIDS"/dwi; fi
+if ls "$BIDS"/*epi* 1> /dev/null 2>&1; then mv "$BIDS"/*epi* "$BIDS"/fmap; fi
+if ls "$BIDS"/anat/*ROI* 1> /dev/null 2>&1; then rm "$BIDS"/anat/*ROI*; fi
 
-Info "REMOVE run-1 string from new 7T DWI acquisition"
-for dwi in $(ls "$BIDS"/dwi/*"acq-"*"_dir-"*"_run-1_dwi"*); do mv $dwi ${dwi/run-1_/}; done
+if ls "$BIDS"/dwi/*"acq-"*"_dir-"*"_run-1_dwi"* 1> /dev/null 2>&1; then
+  Info "REMOVE run-1 string from new 7T DWI acquisition"
+  for dwi in $(ls "$BIDS"/dwi/*"acq-"*"_dir-"*"_run-1_dwi"*); do mv "$dwi" "${dwi/run-1_/}"; done
+fi
 
-Info "REPLACE run-2 string to  from new 7T DWI acquisition"
-for dwi in $(ls "$BIDS"/dwi/*"acq-"*"_dir-"*"_run-2_dwi"*); do mv $dwi ${dwi/run-2_/part-phase_}; done
+if ls "$BIDS"/dwi/*"acq-"*"_dir-"*"_run-2_dwi"* 1> /dev/null 2>&1; then
+  Info "REPLACE run-2 string to part-phase from new 7T DWI acquisition"
+  for dwi in $(ls "$BIDS"/dwi/*"acq-"*"_dir-"*"_run-2_dwi"*); do mv "$dwi" "${dwi/run-2_/part-phase_}"; done
+fi
 
-Info "REPLACE \"_sbref_ph\" with \"_part-phase_sbref\""
-for dwi in $(ls "$BIDS"/dwi/*"_sbref_ph"*); do mv $dwi ${dwi/_sbref_ph/_part-phase_sbref}; done
-for dwi in $(ls "$BIDS"/dwi/*"_dwi_ph"*); do mv $dwi ${dwi/_dwi_ph/_part-phase_dwi}; done
+if ls "$BIDS"/dwi/*"_sbref_ph"* 1> /dev/null 2>&1; then
+  Info "REPLACE \"_sbref_ph\" with \"_part-phase_sbref\""
+  for dwi in $(ls "$BIDS"/dwi/*"_sbref_ph"*); do mv "$dwi" "${dwi/_sbref_ph/_part-phase_sbref}"; done
+fi
+
+if ls "$BIDS"/dwi/*"_dwi_ph"* 1> /dev/null 2>&1; then
+  Info "REPLACE \"_dwi_ph\" with \"_part-phase_dwi\""
+  for dwi in $(ls "$BIDS"/dwi/*"_dwi_ph"*); do mv "$dwi" "${dwi/_dwi_ph/_part-phase_dwi}"; done
+fi
 
 # -----------------------------------------------------------------------------------------------
 # Add Units to the phase files
