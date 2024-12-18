@@ -14,6 +14,8 @@ RUN apt-get update -qq \
            git \
            make \
            pigz \
+           unzip \
+           wget \
            zlib1g-dev \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
@@ -28,11 +30,25 @@ RUN apt-get update -qq \
     && make install \
     && rm -rf /tmp/dcm2niix
 
+# Download and install Miniconda
+RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /miniconda.sh && \
+    bash /miniconda.sh -b -p /opt/conda && \
+    rm /miniconda.sh && \
+    /opt/conda/bin/conda init && \
+    /opt/conda/bin/conda clean -afy
+
+# Update PATH to include conda
+ENV PATH="/opt/conda/bin:$PATH"
+
+# Install MRTrix 3
+RUN conda install -c mrtrix3 mrtrix3
+
 # Install jq v1.6
 RUN apt-get update && apt-get install -y jq
 
 # Install deno v2.0.6
 RUN curl -fsSL https://deno.land/install.sh | sh
+ENV PATH="/root/.deno/bin:$PATH"
 
 # Compile bids-validator v2.0.0
 RUN deno compile -ERN -o bids-validator jsr:@bids/validator
@@ -43,5 +59,6 @@ WORKDIR /app
 # Copy the current directory contents into the container at /app
 COPY . /app
 
+ENV PATH="/app/functions:$PATH"
 # Run the application
-CMD ["functions/mpn_dcm2bids.py"]
+CMD ["dcm2bids.py"]
