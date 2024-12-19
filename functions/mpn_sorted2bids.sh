@@ -192,12 +192,12 @@ orig=(
 
 bids=(
     T1w
-    acq-anatTra_TB1TFL
-    acq-anatSag_TB1TFL
+    acq-anat_TB1TFL
+    acq-anat_TB1TFL
     dir-AP_epi
     dir-PA_epi
     task-cloudy_bold
-    task-cross_bold
+    task-rest_bold
     task-semphon1_bold
     task-semphon2_bold
     task-rest_bold
@@ -206,21 +206,21 @@ bids=(
     inv-2_MP2RAGE
     T1map
     UNIT1
-    acq-DEN_UNIT1
+    acq-denoised_UNIT1
     FLAIR
     acq-mask_T2starw
     acq-aspire_T2starw
     acq-aspire_T2starw
-    acq-EchoCombined_T2starw
+    acq-combined_part-echo_T2starw
     T2starw
     acq-romeo_T2starw
-    acq-romeoB0_T2starw
-    acq-SensitivityCorrectedMag_T2starw
+    acq-romeoUnwrapped_T2starw
+    acq-SensitivityCorrected_part-mag_T2starw
     acq-clearSWI_T2starmap
     mt-on_MTR
     mt-off_MTR
     acq-MTR_T1w
-    acq-neuromelanin_MWFmap
+    acq-neuromelaninMTw_T1w
     acq-tof_angio
     acq-tofSag_angio
     acq-tofCor_angio
@@ -301,7 +301,7 @@ if ls ${BIDS}/anat/*T2starw_e* 1> /dev/null 2>&1; then
 for i in {1..5}; do
     str="T2starw_e${i}"
     for f in ${BIDS}/anat/*${str}*; do
-        mv $f ${f/${str}/echo-${i}_T2starw}
+        mv $f ${f/${str}/echo-${i}_part-mag_T2starw}
     done
 done
 fi
@@ -322,7 +322,8 @@ replace_phase_suffix() {
 # Apply replacements
 replace_phase_suffix "bold_ph" "part-phase_bold" "$BIDS/func"
 replace_phase_suffix "MTR_ph" "part-phase_MTR" "$BIDS/anat"
-replace_phase_suffix "T2starw_ph" "part-phase_T2starw" "$BIDS/anat"
+replace_phase_suffix "part-mag_T2starw_ph" "part-phase_T2starw" "$BIDS/anat"
+replace_phase_suffix "Unwrapped_T2starw_ph" "Unwrapped_part-phase_T2starw" "$BIDS/anat"
 replace_phase_suffix "T1w_ph" "part-phase_T1w" "$BIDS/anat"
 
 # remove run-? from echo-?_bold
@@ -336,6 +337,19 @@ fi
 if ls "$BIDS"/anat/*MP2RAGE.bv* 1> /dev/null 2>&1; then
   Info "Remove MP2RAGE bval and bvecs"
   rm "$BIDS"/anat/*MP2RAGE.bv*
+fi
+
+# -----------------------------------------------------------------------------------------------
+#  TB1TFL - B1 fieldmaps
+# -----------------------------------------------------------------------------------------------
+# Find files containing "acq-anat_TB1TFL?" where ? could be {,a,b,c..,n}, sort them alphabetically, and process them
+if ls "${BIDS}/fmap/"*acq-anat_TB1TFL*gz 1> /dev/null 2>&1; then
+  TB1TFLa=($(ls "${BIDS}/fmap/"*acq-anat_TB1TFL*gz | sort -V ))
+  for i in "${!TB1TFLa[@]}"; do
+    run_num=$((i + 1))
+    mv -v "${TB1TFLa[${i}]}" "${BIDS}/fmap/${id}acq-anat_run-${run_num}_TB1TFL.nii.gz"
+    mv -v "${TB1TFLa[${i}]/nii.gz/json}" "${BIDS}/fmap/${id}acq-anat_run-${run_num}_TB1TFL.json"
+  done
 fi
 
 # Check if there are TB1TFL files
@@ -354,13 +368,14 @@ if ls "${BIDS}/fmap/"*TB1TFL*gz 1> /dev/null 2>&1; then
         seq_type2=$(basename "$file2" | grep -oP "acq-\K\w+(?=_run)")
 
         # Rename both files and their JSON counterparts
-        mv "$file1" "${BIDS}/fmap/${id}acq-${seq_type1/anat/sfam}_run-${run_num}_TB1TFL.nii.gz"
-        mv "$file2" "${BIDS}/fmap/${id}acq-${seq_type2}_run-${run_num}_TB1TFL.nii.gz"
-        mv "${file1/nii.gz/json}" "${BIDS}/fmap/${id}acq-${seq_type1/anat/sfam}_run-${run_num}_TB1TFL.json"
-        mv "${file2/nii.gz/json}" "${BIDS}/fmap/${id}acq-${seq_type2}_run-${run_num}_TB1TFL.json"
+        mv -v "$file1" "${BIDS}/fmap/${id}acq-${seq_type1/anat/sfam}_run-${run_num}_TB1TFL.nii.gz"
+        mv -v "$file2" "${BIDS}/fmap/${id}acq-${seq_type2}_run-${run_num}_TB1TFL.nii.gz"
+        mv -v "${file1/nii.gz/json}" "${BIDS}/fmap/${id}acq-${seq_type1/anat/sfam}_run-${run_num}_TB1TFL.json"
+        mv -v "${file2/nii.gz/json}" "${BIDS}/fmap/${id}acq-${seq_type2}_run-${run_num}_TB1TFL.json"
     done
 fi
 
+# -----------------------------------------------------------------------------------------------
 # Rename T2starmap
 if ls "$BIDS"/anat/${id}T2starw.* 1> /dev/null 2>&1; then 
   for t2 in "$BIDS"/anat/${id}T2starw.*; do 
@@ -422,13 +437,14 @@ if ls "$BIDS"/dwi/*"_dwi_ph"* 1> /dev/null 2>&1; then
 fi
 
 # -----------------------------------------------------------------------------------------------
-# Add Units to the phase files
+Info "Add Units to the phase files"
 for file in "$BIDS"/*/*phase*json; do
   # Add the key "Units": "arbitrary" to the JSON file
-  jq '. + {"Units": "arbitrary"}' "$file" > tmp.$$.json && mv tmp.$$.json "$file"
+  jq '. + {"Units": "rad"}' "$file" > tmp.$$.json && mv tmp.$$.json "$file"
 done
 
 # -----------------------------------------------------------------------------------------------
+Info "Add MTState to the mt scans"
 # Add MTState to the mt-off scans
 for file in "$BIDS"/*/*mt-off*json; do
   # Add the key "MTState": "False" to the JSON file
@@ -486,14 +502,12 @@ gitrepo=$(dirname $(dirname $(realpath "$0")))
 if [ ! -f "$BIDS_DIR"/participants.json ]; then cp -v "$gitrepo"/participants.json "$BIDS_DIR"/participants.json; fi
 
 # Add the task jsons
-tasks_protocols=(func-cloudy_acq-ep2d_MJC_19mm func-cross_acq-ep2d_MJC_19mm func-semphon1_acq-mbep2d_ME_19mm func-semphon2_acq-mbep2d_ME_19mm)
-tasks=(cross cloudy semphon1 semphon2 rest)
+tasks=($(ls ${BIDS}/func | grep -oP '(?<=task-)[^_]*' | sort -u))
 for i in ${!tasks[@]}; do
     if [ ! -f "$BIDS_DIR"/task-${tasks[$i]}.json ]; then 
     # Create task json files
     cp "$gitrepo"/task-template_bold.json "$BIDS_DIR"/task-${tasks[$i]}_bold.json
     # Replace strings
-    sed -i "s/PROTOCOL_NAME/${tasks_protocols[$i]}/g" "$BIDS_DIR"/task-${tasks[$i]}_bold.json
     sed -i "s/TASK_NAME/${tasks[$i]}/g" "$BIDS_DIR"/task-${tasks[$i]}_bold.json
     fi
 done
