@@ -35,76 +35,107 @@ The data processing workflow begins by transferring raw MRI data, in both BIDS a
 
 ## MRI transfering steps
 
-### 1. DICOM Sorting: Organizes raw DICOM into a temporary structurated directories
+### Option 1. Raw DICOM to to NIfTI BIDS
+1. Organizes raw DICOM into a temporary structurated directories
+2. Transforms the sorted dicoms into BIDS
+3. Run BIDS validator through `deno`
+
 ```bash
-dcmSort.sh
+dcm2bids.py --dicoms_dir MPN00001_sorted/ --bids_dir /BIDS_MPN/rawdata --sub MPN00001 --ses v1
 ```
 
-### 2. Sorted DICOM to NIfTI BIDS
+### Option 2. Sorted DICOM to NIfTI BIDS
 ```bash
-mpn_sorted2bids.sh
+dcm2bids.py --dicoms_dir MPN00001_sorted/ --sorted_dir MPN00001_sorted/ --bids_dir /BIDS_MPN/rawdata --sub MPN00001 --ses v1
 ```
 
 ### 3. Integrated BIDS validation
-```python
-from bids_validator import BIDSValidator
-BIDSValidator().is_bids('path/to/mpn_rawdata')
-
+```bash
+deno run --allow-write -ERN jsr:@bids/validator {bids_dir} --ignoreWarnings --outfile {bids_dir}/bids_validator_output.txt
 ```
 
 ### Running `micapipe v0.2.3` with container
 ```bash
-micapipe_q1k.sh Q1K004 01 <path to singularity image>
+mpn_micapipe.sh <subject> <session> <path to singularity image>
 ```
-# Naming convention
-| **N** | **7T Terra Siemens acquisition**                | **BIDS**                            | **Directory** |
-|:-----:|:-----------------------------------------------:|:-----------------------------------:|:-------------:|
-|  1    | *anat-T1w_acq_mprage_0.8mm_CSptx             | T1w                                   | anat          |
-|  2    | *fmap-b1_tra_p2                              | acq-[anat|famp]_TB1TFL                | fmap          |
-|  3    | *fmap-b1_acq-sag_p2                          | acq-[anat|famp]_TB1TFL                | fmap          |
-|  4    | *fmap-fmri_acq-mbep2d_SE_19mm_dir-AP         | dir-AP_epi                            | fmap          |
-|  5    | *fmap-fmri_acq-mbep2d_SE_19mm_dir-PA         | dir-PA_epi                            | fmap          |
-|  6    | *func-cloudy_acq-ep2d_MJC_19mm               | task-cloudy_bold                      | func          |
-|  7    | *func-cross_acq-ep2d_MJC_19mm                | task-rest_bold                        | func          |
-|  8    | *func-present_acq-mbep2d_ME_19mm             | task-present_bold                     | func          |
-| 12    | *anat-T1w_acq-mp2rage_0.7mm_CSptx_INV1       | inv-1_MP2RAGE                         | anat          |
-| 13    | *anat-T1w_acq-mp2rage_0.7mm_CSptx_INV2       | inv-2_MP2RAGE                         | anat          |
-| 14    | *anat-T1w_acq-mp2rage_0.7mm_CSptx_T1_Images  | T1map                                 | anat          |
-| 15    | *anat-T1w_acq-mp2rage_0.7mm_CSptx_UNI_Images | UNIT1                                 | anat          |
-| 16    | *anat-T1w_acq-mp2rage_0.7mm_CSptx_UNI-DEN    | acq-denoised_UNIT1                    | anat          |
-| 17    | *anat-flair_acq-0p7iso_UPAdia                | FLAIR                                 | anat          |
-| 18    | *Romeo_Mask_anat-T2star_acq-me_gre_0*7iso_ASPIRE | acq-mask_T2starw                  | anat          |
-| 19    | *Aspire_M_anat-T2star_acq-me_gre_0*7iso_ASPIRE | acq-aspire_part-mag_T2starw         | anat          |
-| 20    | *Aspire_P_anat-T2star_acq-me_gre_0*7iso_ASPIRE | acq-aspire_part-phase_T2starw       | anat          |
-| 21    | *EchoCombined_anat-T2star_acq-me_gre_0*7iso_ASPIRE | acq-combined_part-echo_T2starw  | anat          |
-| 22    | *T2star_anat-T2star_acq-me_gre_0*7iso_ASPIRE | T2starw                               | anat          |
-| 23    | *Romeo_P_anat-T2star_acq-me_gre_0*7iso_ASPIRE | acq-romeo_part-phase_T2starw         | anat          |
-| 24    | *Romeo_B0_anat-T2star_acq-me_gre_0*7iso_ASPIRE | acq-romeoUnwrapped_T2starw          | anat          |
-| 25    | *sensitivity_corrected_mag_anat-T2star_acq-me_gre_0*7iso_ASPIRE | acq-SensitivityCorrected_part-mag_T2starw | anat |
-| 26    | *CLEAR-SWI_anat-T2star_acq-me_gre_0*7iso_ASPIRE | acq-clearSWI_T2starmap             | anat          |
-| 27    | *anat-mtw_acq-MTON_07mm                      | mt-on_MTR                             | anat          |
-| 28    | *anat-mtw_acq-MTOFF_07mm                     | mt-off_MTR                            | anat          |
-| 29    | *anat-mtw_acq-T1w_07mm                       | acq-MTR_T1w                           | anat          |
-| 30    | *anat-nm_acq-MTboost_sag_0.55mm              | acq-neuromelaninMTw_T1w               | anat          |
-| 31    | *anat-angio_acq-tof_03mm_inplane             | acq-tof_angio                         | anat          |
-| 32    | *anat-angio_acq-tof_03mm_inplane_MIP_SAG     | acq-tofSag_angio                      | anat          |
-| 33    | *anat-angio_acq-tof_03mm_inplane_MIP_COR     | acq-tofCor_angio                      | anat          |
-| 34    | *anat-angio_acq-tof_03mm_inplane_MIP_TRA     | acq-tofTra_angio                      | anat          |
-| 35    | *dwi_acq_b0_PA                               | acq-b0_dir-PA_dwi                     | dwi           |
-| 36    | *dwi_acq_b0_PA_SBRef                         | acq-b0_dir-PA_sbref                   | dwi           |
-| 37    | *dwi_acq_multib_38dir_AP_acc9                | acq-multib38_dir-AP_dwi               | dwi           |
-| 38    | *dwi_acq_multib_38dir_AP_acc9_SBRef          | acq-multib38_dir-AP_sbref             | dwi           |
-| 39    | *dwi_acq_multib_70dir_AP_acc9                | acq-multib70_dir-AP_dwi               | dwi           |
-| 40    | *dwi_acq_multib_70dir_AP_acc9_SBRef          | acq-multib70_dir-AP_sbref             | dwi           |
+
+# Naming convention | anatomical
+| **N** | **7T Terra Siemens acquisition**                   | **BIDS**                            | **Directory** |
+|:-----:|:--------------------------------------------------:|:-----------------------------------:|:-------------:|
+|   1   | *anat-T1w_acq_mprage_0.8mm_CSptx                   | T1w                                 | anat          |
+|   2   | *anat-T1w_acq-mp2rage_0.7mm_CSptx_INV1             | inv-1_MP2RAGE                       | anat          |
+|   3   | *anat-T1w_acq-mp2rage_0.7mm_CSptx_INV2             | inv-2_MP2RAGE                       | anat          |
+|   4   | *anat-T1w_acq-mp2rage_0.7mm_CSptx_T1_Images        | T1map                               | anat          |
+|   5   | *anat-T1w_acq-mp2rage_0.7mm_CSptx_UNI_Images       | UNIT1                               | anat          |
+|   6   | *anat-T1w_acq-mp2rage_0.7mm_CSptx_UNI-DEN          | acq-denoised_UNIT1                  | anat          |
+|   7   | *anat-flair_acq-0p7iso_UPAdia                      | FLAIR                               | anat          |
+|   8   | *Romeo_Mask_anat-T2star_acq-me_gre_0*7iso_ASPIRE   | acq-mask_T2starw                    | anat          |
+|   9   | *Aspire_M_anat-T2star_acq-me_gre_0*7iso_ASPIRE     | acq-aspire_part-mag_T2starw         | anat          |
+|  10   | *Aspire_P_anat-T2star_acq-me_gre_0*7iso_ASPIRE     | acq-aspire_part-phase_T2starw       | anat          |
+|  11   | *EchoCombined_anat-T2star_acq-me_gre_0*7iso_ASPIRE | acq-combined_part-echo_T2starw      | anat          |
+|  12   | *T2star_anat-T2star_acq-me_gre_0*7iso_ASPIRE       | T2starw                             | anat          |
+|  13   | *Romeo_P_anat-T2star_acq-me_gre_0*7iso_ASPIRE      | acq-romeo_part-phase_T2starw        | anat          |
+|  14   | *Romeo_B0_anat-T2star_acq-me_gre_0*7iso_ASPIRE     | acq-romeoUnwrapped_T2starw          | anat          |
+|  15   | *sensitivity_corrected_mag_anat-T2star_acq-me_gre_0*7iso_ASPIRE | acq-SensitivityCorrected_part-mag_T2starw | anat |
+|  16   | *CLEAR-SWI_anat-T2star_acq-me_gre_0*7iso_ASPIRE    | acq-clearSWI_T2starmap              | anat          |
+|  17   | *anat-mtw_acq-MTON_07mm                            | mt-on_MTR                           | anat          |
+|  18   | *anat-mtw_acq-MTOFF_07mm                           | mt-off_MTR                          | anat          |
+|  19   | *anat-mtw_acq-T1w_07mm                             | acq-MTR_T1w                         | anat          |
+|  20   | *anat-nm_acq-MTboost_sag_0.55mm                    | acq-neuromelaninMTw_T1w             | anat          |
+|  21   | *anat-angio_acq-tof_03mm_inplane                   | acq-tof_angio                       | anat          |
+|  22   | *anat-angio_acq-tof_03mm_inplane_MIP_SAG           | acq-tofSag_angio                    | anat          |
+|  23   | *anat-angio_acq-tof_03mm_inplane_MIP_COR           | acq-tofCor_angio                    | anat          |
+|  24   | *anat-angio_acq-tof_03mm_inplane_MIP_TRA           | acq-tofTra_angio                    | anat          |
+
+The acquisitions `acq-romeo_part-phase_T2starw`, `acq-aspire_part-mag_T2starw`, and `acq-aspire_part-phase_T2starw` each have five echoes. The final string will include the identifier `echo-` followed by the echo number. For example: `acq-aspire_echo-1_part-mag_T2starw`.
+
+# Naming convention | Field maps
+| **N** | **7T Terra Siemens acquisition**             | **BIDS**                              | **Directory** |
+|:-----:|:--------------------------------------------:|:-------------------------------------:|:-------------:|
+|  1    | *fmap-b1_tra_p2                              | acq-[anat|famp]_TB1TFL                | fmap          |
+|  2    | *fmap-b1_acq-sag_p2                          | acq-[anat|famp]_TB1TFL                | fmap          |
+|  3    | *fmap-fmri_acq-mbep2d_SE_19mm_dir-AP         | dir-AP_epi                            | fmap          |
+|  4    | *fmap-fmri_acq-mbep2d_SE_19mm_dir-PA         | dir-PA_epi                            | fmap          |
+
+# Naming convention | Functional
+| **N** | **7T Terra Siemens acquisition**             | **BIDS**                              | **Directory** |
+|:-----:|:--------------------------------------------:|:-------------------------------------:|:-------------:|
+|  1    | *func-cross_acq-ep2d_MJC_19mm                | task-rest_bold                        | func          |
+|  2    | *func-cloudy_acq-ep2d_MJC_19mm               | task-cloudy_bold                      | func          |
+|  3    | *func-present_acq-mbep2d_ME_19mm             | task-present_bold                     | func          |
+
+Each functional MRI acquisition includes three echoes and a phase. The final string will contain the identifier `echo-` followed by the echo number (e.g., `task-rest_echo-1_bold`). Additionally, the string `part-phase` will be included to identify the phase (e.g., `task-rest_echo-1_part-phase_bold`).
+
+# Naming convention | Diffusion weighted Images
+| **N** | **7T Terra Siemens acquisition**             | **BIDS**                              | **Directory** |
+|:-----:|:--------------------------------------------:|:-------------------------------------:|:-------------:|
+|  1    | *dwi_acq_b0_PA                               | acq-b0_dir-PA_dwi                     | dwi           |
+|  2    | *dwi_acq_b0_PA_SBRef                         | acq-b0_dir-PA_sbref                   | dwi           |
+|  3    | *dwi_acq_multib_38dir_AP_acc9                | acq-multib38_dir-AP_dwi               | dwi           |
+|  4    | *dwi_acq_multib_38dir_AP_acc9_SBRef          | acq-multib38_dir-AP_sbref             | dwi           |
+|  5    | *dwi_acq_multib_70dir_AP_acc9                | acq-multib70_dir-AP_dwi               | dwi           |
+|  6    | *dwi_acq_multib_70dir_AP_acc9_SBRef          | acq-multib70_dir-AP_sbref             | dwi           |
+
+The string `part-phase` will be included to identify the phase acquisitions (e.g., `acq-multib38_dir-AP_part-phase_dwi`).
 
 ### Abbreviation Glossary
 
+> **AP**: Anterio-Posterior
+
+> **PA**: Postero-anterior
+
 > **MTw**: Magnetic transfer weighted
+
 > **fmap**: scaled flip angle map
+
 > **tof**: time of flight
+
 > **multib**: multi shell N directions
+
 > **semphon**: semantic-phonetic
+
 > **romeo**: rapid opensource minimum spanning tree algorithm
+
 > **aspire**: Combination of multi-channel phase data from multi-echo acquisitions
 
 # References
