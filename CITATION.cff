@@ -27,25 +27,23 @@ keywords:
   - neuroinformatics
 
 authors:
-  - family-names: Bernhardt
-    given-names: Boris
-    orcid: https://orcid.org/0000-0001-9256-6041
   - family-names: Cruces
     given-names: Raul
     orcid: https://orcid.org/0000-0001-8002-0877
-  - family-names: Doyon
-    given-names: Julian
-  - family-names: Fonov
-    given-names: Vladimir
-  - family-names: Hansen
-    given-names: Heather
-  - family-names: Khalili-Mahani
-    given-names: Najmeh
   - family-names: Leppert
     given-names: Ilana Ruth
   - family-names: Mulder
     given-names: Maxime
+  - family-names: Hansen
+    given-names: Heather
+  - family-names: Fonov
+    given-names: Vladimir
   - family-names: Xuan
     given-names: Mai Pham
-  - family-names: Yang
-    given-names: Enning
+  - family-names: Khalili-Mahani
+    given-names: Najmeh
+  - family-names: Bernhardt
+    given-names: Boris
+    orcid: https://orcid.org/0000-0001-9256-6041
+  - family-names: Doyon
+    given-names: Julian
