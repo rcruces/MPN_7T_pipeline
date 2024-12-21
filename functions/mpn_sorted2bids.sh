@@ -54,7 +54,7 @@ Error() {
 }
 
 # Print warning message with black background and yellow text
-Warn() {
+Warning() {
     echo -e "\033[48;5;0;38;5;214m\n[ WARNING ]..... $1 \033[0m\n"
 }
 
@@ -194,8 +194,8 @@ bids=(
     T1w
     acq-anat_TB1TFL
     acq-anat_TB1TFL
-    dir-AP_epi
-    dir-PA_epi
+    acq-fmri_dir-AP_epi
+    acq-fmri_dir-PA_epi
     task-cloudy_bold
     task-rest_bold
     task-semphon1_bold
@@ -221,10 +221,10 @@ bids=(
     mt-off_MTR
     acq-MTR_T1w
     acq-neuromelaninMTw_T1w
-    acq-tof_angio
-    acq-tofSag_angio
-    acq-tofCor_angio
-    acq-tofTra_angio
+    angio
+    acq-sag_angio
+    acq-cor_angio
+    acq-tra_angio
 )
 
 origDWI=(
@@ -257,7 +257,7 @@ n=$((${#orig[@]} - 1))
 for ((k=0; k<=n; k++)); do
   N=$(ls -d ${orig[k]} 2>/dev/null | wc -l) # make it quiet
   if [ "$N" -eq 0 ]; then
-    Warn "No directories were found with the following name: ${orig[k]}"
+    Warning "No directories were found with the following name: ${orig[k]}"
   elif [ "$N" -gt 1 ]; then
     Names=($(ls -d ${orig[k]}))
     for ((i = 1; i <= N; i++)); do
@@ -282,7 +282,6 @@ if ls "$BIDS"/*T2* 1> /dev/null 2>&1; then mv "$BIDS"/*T2* "$BIDS"/anat; fi
 if ls "$BIDS"/*fieldmap* 1> /dev/null 2>&1; then mv "$BIDS"/*fieldmap* "$BIDS"/fmap; fi
 if ls "$BIDS"/*TB1TFL* 1> /dev/null 2>&1; then mv "$BIDS"/*TB1TFL* "$BIDS"/fmap; fi
 if ls "$BIDS"/*FLAIR* 1> /dev/null 2>&1; then mv "$BIDS"/*FLAIR* "$BIDS"/anat; fi
-if ls "$BIDS"/*MWFmap* 1> /dev/null 2>&1; then mv "$BIDS"/*MWFmap* "$BIDS"/anat; fi
 if ls "$BIDS"/*angio* 1> /dev/null 2>&1; then mv "$BIDS"/*angio* "$BIDS"/anat; fi
 if ls "$BIDS"/*MTR* 1> /dev/null 2>&1; then mv "$BIDS"/*MTR* "$BIDS"/anat; fi
 
@@ -334,13 +333,14 @@ if ls "$BIDS"/func/*"_run-"* 1> /dev/null 2>&1; then
   done
 fi
 
+# Remove bvals and bvecs from MP2RAGE
 if ls "$BIDS"/anat/*MP2RAGE.bv* 1> /dev/null 2>&1; then
   Info "Remove MP2RAGE bval and bvecs"
   rm "$BIDS"/anat/*MP2RAGE.bv*
 fi
 
 # -----------------------------------------------------------------------------------------------
-#  TB1TFL - B1 fieldmaps
+Info  "TB1TFL - B1 fieldmaps"
 # -----------------------------------------------------------------------------------------------
 # Find files containing "acq-anat_TB1TFL?" where ? could be {,a,b,c..,n}, sort them alphabetically, and process them
 if ls "${BIDS}/fmap/"*acq-anat_TB1TFL*gz 1> /dev/null 2>&1; then
@@ -391,7 +391,7 @@ n=$((${#origDWI[@]} - 1))
 for ((k=0; k<=n; k++)); do
   N=$(ls -d ${origDWI[k]} 2>/dev/null | wc -l) # make it quiet
   if [ "$N" -eq 0 ]; then
-    Warn "No directories were found with the following name: ${origDWI[k]}"
+    Warning "No directories were found with the following name: ${origDWI[k]}"
   elif [ "$N" -gt 1 ]; then
     Names=($(ls -d ${origDWI[k]} 2>/dev/null))
     for ((i = 0; i < N; i++)); do
@@ -519,7 +519,7 @@ if [ ! -f "$BIDS_DIR"/dataset_description.json ]; then cp -v "$gitrepo"/dataset_
 if [ ! -f "$BIDS_DIR"/CITATION.cff ]; then cp -v "$gitrepo"/CITATION.cff "$BIDS_DIR"/CITATION.cff; fi
 
 # Create README
-echo -e "This dataset was provided by the Montreal Paris Neurobanque initiative.\n\nIf you reference this dataset in your publications, please acknowledge its authors." > "$BIDS_DIR"/README
+echo -e "This dataset was provided by the Montreal-Paris Neurobanque initiative, Montreal Neurological Institute and Hospital, The Neuro.\n\nIf you reference this dataset in your publications, please acknowledge its authors." > "$BIDS_DIR"/README
 
 # -----------------------------------------------------------------------------------------------
 # Go back to initial directory

@@ -83,10 +83,10 @@ mpn_micapipe.sh <subject> <session> <path to singularity image>
 |  18   |  anat-mtw_acq-MTOFF_07mm                           | mt-off_MTR                          | anat          |
 |  19   |  anat-mtw_acq-T1w_07mm                             | acq-MTR_T1w                         | anat          |
 |  20   |  anat-nm_acq-MTboost_sag_0.55mm                    | acq-neuromelaninMTw_T1w             | anat          |
-|  21   |  anat-angio_acq-tof_03mm_inplane                   | acq-tof_angio                       | anat          |
-|  22   |  anat-angio_acq-tof_03mm_inplane_MIP_SAG           | acq-tofSag_angio                    | anat          |
-|  23   |  anat-angio_acq-tof_03mm_inplane_MIP_COR           | acq-tofCor_angio                    | anat          |
-|  24   |  anat-angio_acq-tof_03mm_inplane_MIP_TRA           | acq-tofTra_angio                    | anat          |
+|  21   |  anat-angio_acq-tof_03mm_inplane                   | angio                               | anat          |
+|  22   |  anat-angio_acq-tof_03mm_inplane_MIP_SAG           | acq-sag_angio                       | anat          |
+|  23   |  anat-angio_acq-tof_03mm_inplane_MIP_COR           | acq-cor_angio                       | anat          |
+|  24   |  anat-angio_acq-tof_03mm_inplane_MIP_TRA           | acq-tra_angio                       | anat          |
 
 > The acquisitions `acq-romeo_part-phase_T2starw`, `acq-aspire_part-mag_T2starw`, and `acq-aspire_part-phase_T2starw` each have five echoes. The final string will include the identifier `echo-` followed by the echo number. For example: `acq-aspire_echo-1_part-mag_T2starw`.
 
@@ -95,8 +95,8 @@ mpn_micapipe.sh <subject> <session> <path to singularity image>
 |:-----:|:--------------------------------------------:|:-------------------------------------:|:-------------:|
 |  1    | fmap-b1_tra_p2                              | acq-[anat|famp]_TB1TFL                | fmap          |
 |  2    | fmap-b1_acq-sag_p2                          | acq-[anat|famp]_TB1TFL                | fmap          |
-|  3    | fmap-fmri_acq-mbep2d_SE_19mm_dir-AP         | dir-AP_epi                            | fmap          |
-|  4    | fmap-fmri_acq-mbep2d_SE_19mm_dir-PA         | dir-PA_epi                            | fmap          |
+|  3    | fmap-fmri_acq-mbep2d_SE_19mm_dir-AP         | acq-fmri_dir-AP_epi                   | fmap          |
+|  4    | fmap-fmri_acq-mbep2d_SE_19mm_dir-PA         | acq-fmri_dir-PA_epi                   | fmap          |
 
 ## Functional
 | **N** | **7T Terra Siemens acquisition**             | **BIDS**                              | **Directory** |
