@@ -3,8 +3,8 @@
 # Montréal Paris Neurobanque (MPN) 7T MRI Data Processing Pipeline
 
 [![version](https://img.shields.io/github/v/tag/rcruces/7T_pipeline)](https://github.com/rcruces/7T_pipeline)
-[![Docker Image Version](https://img.shields.io/docker/v/rcruces/7T_pipeline?color=blue&label=docker%20version)](https://hub.docker.com/r/rcruces/7T_pipeline)
-[![Docker Pulls](https://img.shields.io/docker/pulls/rcruces/7T_pipeline)](https://hub.docker.com/r/rcruces/7T_pipeline)
+[![Docker Image Version](https://img.shields.io/docker/v/rcruces/mpn?color=blue&label=docker%20version)](https://hub.docker.com/r/rcruces/mpn)
+[![Docker Pulls](https://img.shields.io/docker/pulls/rcruces/mpn)](https://hub.docker.com/r/rcruces/mpn)
 [![License: GPL v3](https://img.shields.io/github/license/rcruces/7T_pipeline?color=blue)](https://www.gnu.org/licenses/gpl-3.0)
 [![GitHub issues](https://img.shields.io/github/issues/rcruces/7T_pipeline)](https://github.com/rcruces/7T_pipeline/issues)
 [![GitHub stars](https://img.shields.io/github/stars/rcruces/7T_pipeline.svg?style=flat&label=⭐%EF%B8%8F%20stars&color=brightgreen)](https://github.com/rcruces/7T_pipeline/stargazers)
