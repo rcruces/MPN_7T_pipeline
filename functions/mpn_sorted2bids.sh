@@ -354,7 +354,6 @@ tb1tfl_rename() {
           file2="${b1s[$i+1]}"
           run_num=$((i / 2 + 1))
           # Rename both files and their JSON counterparts
-          acq-anat_run-1_TB1TFL
           mv "$file1" "${BIDS}/fmap/${id}acq-anat_run-${run_num}_TB1TFL.nii.gz"
           mv "$file2" "${BIDS}/fmap/${id}acq-sfam_run-${run_num}_TB1TFL.nii.gz"
           mv "${file1/nii.gz/json}" "${BIDS}/fmap/${id}acq-anat_run-${run_num}_TB1TFL.json"
@@ -429,6 +428,7 @@ dwi_rename() {
           mv "${file2/nii.gz/json}" "${BIDS}/dwi/${id}${dwi_acq}_run-${run_num}_part-phase_dwi.json"
       done
     fi
+}
 
 # Rename the phase files (run-2 or mulples of 2)
 dwi_rename acq-multib38_dir-AP

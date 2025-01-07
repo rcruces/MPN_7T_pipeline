@@ -60,5 +60,6 @@ WORKDIR /app
 COPY . /app
 
 ENV PATH="/app/functions:$PATH"
+
 # Run the application
-CMD ["dcm2bids.py"]
+ENTRYPOINT ["dcm2bids.py"]
