@@ -160,6 +160,7 @@ orig=(
     "*fmap-fmri_acq-mbep2d_SE_19mm_dir-AP"
     "*fmap-fmri_acq-mbep2d_SE_19mm_dir-PA"
     "*func-cloudy_acq-ep2d_MJC_19mm"
+    "*func-present_acq-ep2d_MJC_19mm"
     "*func-cross_acq-ep2d_MJC_19mm"
     "*func-semphon1_acq-mbep2d_ME_19mm"
     "*func-semphon2_acq-mbep2d_ME_19mm"
@@ -197,6 +198,7 @@ bids=(
     acq-fmri_dir-AP_epi
     acq-fmri_dir-PA_epi
     task-cloudy_bold
+    task-present-bold
     task-rest_bold
     task-semphon1_bold
     task-semphon2_bold
