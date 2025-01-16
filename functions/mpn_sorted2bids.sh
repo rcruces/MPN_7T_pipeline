@@ -198,7 +198,7 @@ bids=(
     acq-fmri_dir-AP_epi
     acq-fmri_dir-PA_epi
     task-cloudy_bold
-    task-present-bold
+    task-present_bold
     task-rest_bold
     task-semphon1_bold
     task-semphon2_bold
