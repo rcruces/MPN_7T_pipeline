@@ -206,17 +206,17 @@ bids=(
     inv-2_MP2RAGE
     T1map
     UNIT1
-    acq-denoised_UNIT1
+    desc-denoised_UNIT1
     FLAIR
-    acq-SWI_T2starw
+    acq-SWI_GRE
     acq-romeo_T2starw
     acq-romeo_desc-mask_T2starw
     acq-romeo_desc-unwrapped_T2starw
     acq-aspire_T2starw
     acq-aspire_T2starw
-    acq-echoCombined_T2starw
-    acq-echoCombined_desc-sensitivityCorrected_T2starw
-    T2starw
+    acq-aspire_desc-echoCombined_T2starw
+    acq-aspire_desc-echoCombinedSensitivityCorrected_T2starw
+    acq-aspire_T2starw
     acq-mtw_mt-on_MTR
     acq-mtw_mt-off_MTR
     acq-mtw_T1w
@@ -284,6 +284,8 @@ if ls "$BIDS"/*TB1TFL* 1> /dev/null 2>&1; then mv "$BIDS"/*TB1TFL* "$BIDS"/fmap;
 if ls "$BIDS"/*FLAIR* 1> /dev/null 2>&1; then mv "$BIDS"/*FLAIR* "$BIDS"/anat; fi
 if ls "$BIDS"/*angio* 1> /dev/null 2>&1; then mv "$BIDS"/*angio* "$BIDS"/anat; fi
 if ls "$BIDS"/*MTR* 1> /dev/null 2>&1; then mv "$BIDS"/*MTR* "$BIDS"/anat; fi
+# SWI | GRE https://docs.google.com/document/d/1kyw9mGgacNqeMbp4xZet3RnDhcMmf4_BmRgKaOkO2Sc/edit?tab=t.0#heading=h.kc8slmd5olof
+if ls "$BIDS"/*GRE* 1> /dev/null 2>&1; then mv "$BIDS"/*GRE* "$BIDS"/anat; fi
 
 # Rename echos: echo-1_bold.nii.gz
 if ls ${BIDS}/func/*bold_e* 1> /dev/null 2>&1; then
@@ -479,7 +481,7 @@ echo -e "${Subj}\t${SES/ses-/}\t${dat}\t${anat}\t${dwi}\t${func}\t${fmap}\t${SUB
 # Gitignore file
 bidsignore="$BIDS_DIR"/.bidsignore
 # Check if file exist
-if [ ! -f "$bidsignore" ]; then echo -e "participants_7t2bids.tsv\nbids_validator_output.txt" > "$bidsignore"; fi
+if [ ! -f "$bidsignore" ]; then echo -e "participants_7t2bids.tsv\nbids_validator_output.txt\nsub*/ses*/anat/*desc-*\nsub*/ses*/anat/*GRE*" > "$bidsignore"; fi
 
 # -----------------------------------------------------------------------------------------------
 # Add the new subject to the participants.tsv file

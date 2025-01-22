@@ -68,20 +68,20 @@ mpn_micapipe.sh <subject> <session> <path to singularity image>
 |   3   |  anat-T1w_acq-mp2rage_0.7mm_CSptx_INV2             | inv-2_MP2RAGE                       | anat          |
 |   4   |  anat-T1w_acq-mp2rage_0.7mm_CSptx_T1_Images        | T1map                               | anat          |
 |   5   |  anat-T1w_acq-mp2rage_0.7mm_CSptx_UNI_Images       | UNIT1                               | anat          |
-|   6   |  anat-T1w_acq-mp2rage_0.7mm_CSptx_UNI-DEN          | acq-denoised_UNIT1                  | anat          |
+|   6   |  anat-T1w_acq-mp2rage_0.7mm_CSptx_UNI-DEN          | desc-denoised_UNIT1                 | anat          |
 |   7   |  anat-flair_acq-0p7iso_UPAdia                      | FLAIR                               | anat          |
-|   8   |  Romeo_Mask_anat-T2star_acq-me_gre_0\*7iso_ASPIRE  | acq-mask_T2starw                    | anat          |
+|  16   |  CLEAR-SWI_anat-T2star_acq-me_gre_0\*7iso_ASPIRE   | acq-SWI_GRE                         | anat          |
+|  13   |  Romeo_P_anat-T2star_acq-me_gre_0\*7iso_ASPIRE     | acq-romeo_T2starw                   | anat          |
+|   8   |  Romeo_Mask_anat-T2star_acq-me_gre_0\*7iso_ASPIRE  | acq-romeo_desc-mask_T2starw         | anat          |
+|  14   |  Romeo_B0_anat-T2star_acq-me_gre_0\*7iso_ASPIRE    | acq-romeo_desc-unwrapped_T2starw    | anat          |
 |   9   |  Aspire_M_anat-T2star_acq-me_gre_0\*7iso_ASPIRE    | acq-aspire_part-mag_T2starw         | anat          |
 |  10   |  Aspire_P_anat-T2star_acq-me_gre_0\*7iso_ASPIRE    | acq-aspire_part-phase_T2starw       | anat          |
-|  11   |  EchoCombined_anat-T2star_acq-me_gre_0\*7iso_ASPIRE | acq-combined_part-echo_T2starw      | anat          |
+|  11   |  EchoCombined_anat-T2star_acq-me_gre_0\*7iso_ASPIRE | acq-aspire_desc-echoCombined_T2starw | anat          |
+|  15   |  sensitivity_corrected_mag_anat-T2star_acq-me_gre_0\*7iso_ASPIRE | acq-aspire_desc-echoCombinedSensitivityCorrected_T2starw | anat |
 |  12   |  T2star_anat-T2star_acq-me_gre_0\*7iso_ASPIRE      | T2starw                             | anat          |
-|  13   |  Romeo_P_anat-T2star_acq-me_gre_0\*7iso_ASPIRE     | acq-romeo_part-phase_T2starw        | anat          |
-|  14   |  Romeo_B0_anat-T2star_acq-me_gre_0\*7iso_ASPIRE    | acq-romeoUnwrapped_T2starw          | anat          |
-|  15   |  sensitivity_corrected_mag_anat-T2star_acq-me_gre_0\*7iso_ASPIRE | acq-SensitivityCorrected_part-mag_T2starw | anat |
-|  16   |  CLEAR-SWI_anat-T2star_acq-me_gre_0\*7iso_ASPIRE    | acq-clearSWI_T2starmap              | anat          |
-|  17   |  anat-mtw_acq-MTON_07mm                            | mt-on_MTR                           | anat          |
-|  18   |  anat-mtw_acq-MTOFF_07mm                           | mt-off_MTR                          | anat          |
-|  19   |  anat-mtw_acq-T1w_07mm                             | acq-MTR_T1w                         | anat          |
+|  17   |  anat-mtw_acq-MTON_07mm                            | acq-mtw_mt-on_MTR                   | anat          |
+|  18   |  anat-mtw_acq-MTOFF_07mm                           | acq-mtw_mt-off_MTR                  | anat          |
+|  19   |  anat-mtw_acq-T1w_07mm                             | acq-mtw_T1w                         | anat          |
 |  20   |  anat-nm_acq-MTboost_sag_0.55mm                    | acq-neuromelaninMTw_T1w             | anat          |
 |  21   |  anat-angio_acq-tof_03mm_inplane                   | angio                               | anat          |
 |  22   |  anat-angio_acq-tof_03mm_inplane_MIP_SAG           | acq-sag_angio                       | anat          |
@@ -93,8 +93,8 @@ mpn_micapipe.sh <subject> <session> <path to singularity image>
 ## Field maps
 | **N** | **7T Terra Siemens acquisition**             | **BIDS**                              | **Directory** |
 |:-----:|:--------------------------------------------:|:-------------------------------------:|:-------------:|
-|  1    | fmap-b1_tra_p2                              | acq-[anat|famp]_TB1TFL                | fmap          |
-|  2    | fmap-b1_acq-sag_p2                          | acq-[anat|famp]_TB1TFL                | fmap          |
+|  1    | fmap-b1_tra_p2                              | acq-[anat|sfam]_TB1TFL                | fmap          |
+|  2    | fmap-b1_acq-sag_p2                          | acq-[anat|sfam]_TB1TFL                | fmap          |
 |  3    | fmap-fmri_acq-mbep2d_SE_19mm_dir-AP         | acq-fmri_dir-AP_epi                   | fmap          |
 |  4    | fmap-fmri_acq-mbep2d_SE_19mm_dir-PA         | acq-fmri_dir-PA_epi                   | fmap          |
 
@@ -125,8 +125,8 @@ mpn_micapipe.sh <subject> <session> <path to singularity image>
 |-------------------|---------------------------------------------------------------|
 | **AP**           | Anterio-Posterior                                             |
 | **PA**           | Postero-anterior                                              |
-| **MTw**          | Magnetic transfer weighted                                    |
-| **fmap**         | Scaled flip angle map                                         |
+| **mtw**          | Magnetic transfer weighted                                    |
+| **sfmap**         | Scaled flip angle map                                        |
 | **tof**          | Time of flight                                                |
 | **multib**       | Multi shell N directions                                      |
 | **semphon**      | Semantic-phonetic                                             |
@@ -150,3 +150,22 @@ mpn_micapipe.sh <subject> <session> <path to singularity image>
 | jq                |  1.6          |
 | bids_validator    |  2.0.0        |
 | deno              |  2.0.6        |
+
+# Runing singularity
+```bash
+# Define directories
+bids=/BIDS_MPN/rawdata/
+dicoms=/BIDS_MPN/dicoms
+
+# Path to singularity image
+img=<path_to_image>/dcm2bids_v0.1.2.sif
+
+# Define subject and session 
+sub=MPNphantom
+ses=v1
+
+# Call singularity
+singularity run --writable-tmpfs --containall \
+	-B ${bids}:/bids -B ${dicoms}:/dicoms \
+    ${img} --sub $sub --ses $ses --dicoms_dir /dicoms --sorted_dir /dicoms --bids_dir /bids
+```
