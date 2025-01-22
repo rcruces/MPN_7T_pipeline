@@ -171,15 +171,15 @@ orig=(
     "*anat-T1w_acq-mp2rage_0.7mm_CSptx_UNI_Images"
     "*anat-T1w_acq-mp2rage_0.7mm_CSptx_UNI-DEN"
     "*anat-flair_acq-0p7iso_UPAdia"
+    "*CLEAR-SWI_anat-T2star_acq-me_gre_0*7iso_ASPIRE"
+    "*Romeo_P_anat-T2star_acq-me_gre_0*7iso_ASPIRE"
     "*Romeo_Mask_anat-T2star_acq-me_gre_0*7iso_ASPIRE"
+    "*Romeo_B0_anat-T2star_acq-me_gre_0*7iso_ASPIRE"
     "*Aspire_M_anat-T2star_acq-me_gre_0*7iso_ASPIRE"
     "*Aspire_P_anat-T2star_acq-me_gre_0*7iso_ASPIRE"
     "*EchoCombined_anat-T2star_acq-me_gre_0*7iso_ASPIRE"
-    "*T2star_anat-T2star_acq-me_gre_0*7iso_ASPIRE"
-    "*Romeo_P_anat-T2star_acq-me_gre_0*7iso_ASPIRE"
-    "*Romeo_B0_anat-T2star_acq-me_gre_0*7iso_ASPIRE"
     "*sensitivity_corrected_mag_anat-T2star_acq-me_gre_0*7iso_ASPIRE"
-    "*CLEAR-SWI_anat-T2star_acq-me_gre_0*7iso_ASPIRE"
+    "*T2star_anat-T2star_acq-me_gre_0*7iso_ASPIRE"
     "*anat-mtw_acq-MTON_07mm"
     "*anat-mtw_acq-MTOFF_07mm"
     "*anat-mtw_acq-T1w_07mm"
@@ -208,18 +208,18 @@ bids=(
     UNIT1
     acq-denoised_UNIT1
     FLAIR
-    acq-mask_T2starw
-    acq-aspire_T2starw
-    acq-aspire_T2starw
-    acq-combined_part-echo_T2starw
-    T2starw
-    acq-romeo_T2starw
-    acq-romeoUnwrapped_T2starw
-    acq-SensitivityCorrected_part-mag_T2starw
     acq-SWI_T2starw
-    mt-on_MTR
-    mt-off_MTR
-    acq-MTR_T1w
+    acq-romeo_T2starw
+    acq-romeo_desc-mask_T2starw
+    acq-romeo_desc-unwrapped_T2starw
+    acq-aspire_T2starw
+    acq-aspire_T2starw
+    acq-echoCombined_T2starw
+    acq-echoCombined_desc-sensitivityCorrected_T2starw
+    T2starw
+    acq-mtw_mt-on_MTR
+    acq-mtw_mt-off_MTR
+    acq-mtw_T1w
     acq-neuromelaninMTw_T1w
     angio
     acq-sag_angio
