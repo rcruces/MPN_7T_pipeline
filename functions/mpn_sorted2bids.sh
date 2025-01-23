@@ -246,7 +246,7 @@ bidsDWI=(
 )
 
 #-----------------------------------------------------------------------------------------------
-#Create BIDS/subj_dir
+# Create BIDS/subj_dir
 cmd mkdir -p "$BIDS"/{anat,func,dwi,fmap}
 if [ ! -d "$BIDS" ]; then Error "Could not create subject BIDS directory, check permissions \n\t     ${BIDS}\t    "; exit 0; fi
 
@@ -324,14 +324,26 @@ replace_suffix() {
 replace_suffix "bold_ph" "part-phase_bold" "$BIDS/func"
 replace_suffix "MTR_ph" "part-phase_MTR" "$BIDS/anat"
 replace_suffix "part-mag_T2starw_ph" "part-phase_T2starw" "$BIDS/anat"
-replace_suffix "Unwrapped_T2starw_ph" "Unwrapped_part-phase_T2starw" "$BIDS/anat"
+replace_suffix "unwrapped_T2starw_ph" "unwrapped_part-phase_T2starw" "$BIDS/anat"
 replace_suffix "T1w_ph" "part-phase_T1w" "$BIDS/anat"
 
-# remove run-? from echo-?_bold
-if ls "$BIDS"/func/*"_run-"* 1> /dev/null 2>&1; then
-  Info "REMOVE the run-? from func files (echoes)"
-  for func in $(ls "$BIDS"/func/*"_run-"*); do
-    mv "$func" "${func/_run-?/}"
+# Remove the run-? from the task-rest when there is only 1 run
+func_rename() {
+  func_acq=$1
+  # remove run-? from echo-?_bold if there are 6 files (ONLY 1 run)
+  if [ $(ls "$BIDS"/func/*${func_acq}_run-?_echo-?_bold* 2>/dev/null | wc -l) -eq 6 ]; then
+    # run-1 is the fMRI and run-2 is the phase
+    for func in $(ls "$BIDS"/func/*"${func_acq}_run-1_echo-"?_bold*); do mv "$func" "${func/_run-1/}"; done
+    for func in $(ls "$BIDS"/func/*"${func_acq}_run-2_echo-"?_part-phase_bold*); do mv "$func" "${func/_run-2/}"; done
+  fi
+}
+func_rename "task-rest"
+
+# Remove runs from MTR acquisitions
+if ls "$BIDS"/anat/*acq-mtw_mt-off_run-?_MTR.json 1> /dev/null 2>&1; then
+  # Info "REMOVE the run-? from MTR"
+  for mtr in $(ls "$BIDS"/anat/*"*acq-mtw*"*); do
+    mv "$mtr" "${mtr/_run-?/}"
   done
 fi
 
@@ -371,8 +383,8 @@ if ls "${BIDS}/fmap/"*acq-anat_*TB1TFL*gz 1> /dev/null 2>&1; then tb1tfl_rename;
 
 # -----------------------------------------------------------------------------------------------
 # Rename T2starmap
-if ls "$BIDS"/anat/${id}T2starw.* 1> /dev/null 2>&1; then 
-  for t2 in "$BIDS"/anat/${id}T2starw.*; do 
+if ls "$BIDS"/anat/${id}acq-aspire_T2starw.* 1> /dev/null 2>&1; then 
+  for t2 in "$BIDS"/anat/${id}acq-aspire_T2starw.*; do 
     mv $t2 ${t2/T2starw/T2starmap} 
   done
 fi
