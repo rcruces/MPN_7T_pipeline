@@ -208,7 +208,7 @@ bids=(
     UNIT1
     desc-denoised_UNIT1
     FLAIR
-    acq-SWI_GRE
+    acq-SWI_T2starw
     acq-romeo_T2starw
     acq-romeo_desc-mask_T2starw
     acq-romeo_desc-unwrapped_T2starw
@@ -338,6 +338,8 @@ func_rename() {
   fi
 }
 func_rename "task-rest"
+func_rename "task-cloudy"
+func_rename "task-present"
 
 # Remove runs from MTR acquisitions
 if ls "$BIDS"/anat/*acq-mtw_mt-off_run-?_MTR.json 1> /dev/null 2>&1; then
