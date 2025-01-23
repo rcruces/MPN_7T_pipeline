@@ -342,7 +342,7 @@ func_rename "task-rest"
 # Remove runs from MTR acquisitions
 if ls "$BIDS"/anat/*acq-mtw_mt-off_run-?_MTR.json 1> /dev/null 2>&1; then
   # Info "REMOVE the run-? from MTR"
-  for mtr in $(ls "$BIDS"/anat/*"*acq-mtw*"*); do
+  for mtr in $(ls "$BIDS"/anat/*acq-mtw*); do
     mv "$mtr" "${mtr/_run-?/}"
   done
 fi
