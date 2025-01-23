@@ -145,7 +145,7 @@ if [ ! -d "${SUBJ_DIR}" ]; then Error "Subject DICOMS directory doesn't exist: \
 
 # overwrite BIDS-SUBJECT
 if [[ "${force}" == TRUE ]]; then rm -rf "${BIDS}"; fi
-# if [ -d ${BIDS} ]; then Error "Output directory already exist, use -force to overwrite it. \n\t    ${BIDS}\t    "; exit 0; fi
+if [ -d ${BIDS} ]; then Error "Output directory already exist, use -force to overwrite it. \n\t    ${BIDS}\t    "; exit 0; fi
 
 # Save actual path
 here=$(pwd)
@@ -155,8 +155,7 @@ here=$(pwd)
 # https://bids-specification.readthedocs.io/en/stable/04-modality-specific-files/01-magnetic-resonance-imaging-data.html
 orig=(
     "*anat-T1w_acq_mprage_0.8mm_CSptx"
-    "*fmap-b1_tra_p2"
-    "*fmap-b1_acq-sag_p2"
+    "*fmap-b1_*_p2"
     "*fmap-fmri_acq-mbep2d_SE_19mm_dir-AP"
     "*fmap-fmri_acq-mbep2d_SE_19mm_dir-PA"
     "*func-cloudy_acq-ep2d_MJC_19mm"
@@ -172,15 +171,15 @@ orig=(
     "*anat-T1w_acq-mp2rage_0.7mm_CSptx_UNI_Images"
     "*anat-T1w_acq-mp2rage_0.7mm_CSptx_UNI-DEN"
     "*anat-flair_acq-0p7iso_UPAdia"
+    "*CLEAR-SWI_anat-T2star_acq-me_gre_0*7iso_ASPIRE"
+    "*Romeo_P_anat-T2star_acq-me_gre_0*7iso_ASPIRE"
     "*Romeo_Mask_anat-T2star_acq-me_gre_0*7iso_ASPIRE"
+    "*Romeo_B0_anat-T2star_acq-me_gre_0*7iso_ASPIRE"
     "*Aspire_M_anat-T2star_acq-me_gre_0*7iso_ASPIRE"
     "*Aspire_P_anat-T2star_acq-me_gre_0*7iso_ASPIRE"
     "*EchoCombined_anat-T2star_acq-me_gre_0*7iso_ASPIRE"
-    "*T2star_anat-T2star_acq-me_gre_0*7iso_ASPIRE"
-    "*Romeo_P_anat-T2star_acq-me_gre_0*7iso_ASPIRE"
-    "*Romeo_B0_anat-T2star_acq-me_gre_0*7iso_ASPIRE"
     "*sensitivity_corrected_mag_anat-T2star_acq-me_gre_0*7iso_ASPIRE"
-    "*CLEAR-SWI_anat-T2star_acq-me_gre_0*7iso_ASPIRE"
+    "*T2star_anat-T2star_acq-me_gre_0*7iso_ASPIRE"
     "*anat-mtw_acq-MTON_07mm"
     "*anat-mtw_acq-MTOFF_07mm"
     "*anat-mtw_acq-T1w_07mm"
@@ -193,7 +192,6 @@ orig=(
 
 bids=(
     T1w
-    acq-anat_TB1TFL
     acq-anat_TB1TFL
     acq-fmri_dir-AP_epi
     acq-fmri_dir-PA_epi
@@ -208,20 +206,20 @@ bids=(
     inv-2_MP2RAGE
     T1map
     UNIT1
-    acq-denoised_UNIT1
+    desc-denoised_UNIT1
     FLAIR
-    acq-mask_T2starw
-    acq-aspire_T2starw
-    acq-aspire_T2starw
-    acq-combined_part-echo_T2starw
-    T2starw
+    acq-SWI_GRE
     acq-romeo_T2starw
-    acq-romeoUnwrapped_T2starw
-    acq-SensitivityCorrected_part-mag_T2starw
-    acq-clearSWI_T2starmap
-    mt-on_MTR
-    mt-off_MTR
-    acq-MTR_T1w
+    acq-romeo_desc-mask_T2starw
+    acq-romeo_desc-unwrapped_T2starw
+    acq-aspire_T2starw
+    acq-aspire_T2starw
+    acq-aspire_desc-echoCombined_T2starw
+    acq-aspire_desc-echoCombinedSensitivityCorrected_T2starw
+    acq-aspire_T2starw
+    acq-mtw_mt-on_MTR
+    acq-mtw_mt-off_MTR
+    acq-mtw_T1w
     acq-neuromelaninMTw_T1w
     angio
     acq-sag_angio
@@ -248,30 +246,30 @@ bidsDWI=(
 )
 
 #-----------------------------------------------------------------------------------------------
-#Create BIDS/subj_dir
+# Create BIDS/subj_dir
 cmd mkdir -p "$BIDS"/{anat,func,dwi,fmap}
 if [ ! -d "$BIDS" ]; then Error "Could not create subject BIDS directory, check permissions \n\t     ${BIDS}\t    "; exit 0; fi
 
-# dicomx to Nifti with BIDS Naming
+# Change working directory
 cmd cd $SUBJ_DIR
-# Warning lenght
-n=$((${#orig[@]} - 1))
-for ((k=0; k<=n; k++)); do
-  N=$(ls -d ${orig[k]} 2>/dev/null | wc -l) # make it quiet
-  if [ "$N" -eq 0 ]; then
-    Warning "No directories were found with the following name: ${orig[k]}"
-  elif [ "$N" -gt 1 ]; then
+
+# dicomx to Nifti with BIDS Naming
+for k in "${!orig[@]}"; do
+  bids_name=${bids[k]}
+  mri="${bids_name##*_}"                                                                                                                                                      
+  acq="${bids_name%_*}"
+  # Check if acq_string is not empty
+  if [[ ${acq} == ${mri} ]]; then acq=""; else acq="${acq}_"; fi
+  # Find the number of dicoms_sorted with the sequence name (quiet)
+  N=$(ls -d ${orig[k]} 2>/dev/null | wc -l)
+  if [ "$N" -gt 1 ]; then
     Names=($(ls -d ${orig[k]}))
-    for ((i = 1; i <= N; i++)); do
-       nii=$(echo ${Names[((i-2))]} | awk -F '_' '{print $1 "_" $2}')
-       acq=$(echo ${bids[k]} | grep -oP '(?<=acq-)[^_]+')
-       # Check if acq_string is not empty
-       if [[ -n "$acq" ]]; then acq_string="acq-${acq}_"; else acq_string=""; fi
-       nom="${id}${acq_string}run-${i}_${bids[k]/${acq_string}/}"
-       cmd dcm2niix -z y -b y -o "$BIDS" -f "$nom" ${nii}${orig[k]}
+    for i in "${!Names[@]}"; do
+       out_name="${id}${acq}run-$((i+1))_${mri}"
+       dcm2niix -z y -b y -o "$BIDS" -f "$out_name" ${Names[i]}
     done
   elif [ "$N" -eq 1 ]; then
-     cmd dcm2niix -z y -b y -o "$BIDS" -f ${id}${bids[k]} ${orig[k]}
+     dcm2niix -z y -b y -o "$BIDS" -f ${id}${bids_name} ${orig[k]}
   fi
 done
 
@@ -286,6 +284,8 @@ if ls "$BIDS"/*TB1TFL* 1> /dev/null 2>&1; then mv "$BIDS"/*TB1TFL* "$BIDS"/fmap;
 if ls "$BIDS"/*FLAIR* 1> /dev/null 2>&1; then mv "$BIDS"/*FLAIR* "$BIDS"/anat; fi
 if ls "$BIDS"/*angio* 1> /dev/null 2>&1; then mv "$BIDS"/*angio* "$BIDS"/anat; fi
 if ls "$BIDS"/*MTR* 1> /dev/null 2>&1; then mv "$BIDS"/*MTR* "$BIDS"/anat; fi
+# SWI | GRE https://docs.google.com/document/d/1kyw9mGgacNqeMbp4xZet3RnDhcMmf4_BmRgKaOkO2Sc/edit?tab=t.0#heading=h.kc8slmd5olof
+if ls "$BIDS"/*GRE* 1> /dev/null 2>&1; then mv "$BIDS"/*GRE* "$BIDS"/anat; fi
 
 # Rename echos: echo-1_bold.nii.gz
 if ls ${BIDS}/func/*bold_e* 1> /dev/null 2>&1; then
@@ -308,7 +308,7 @@ done
 fi
 
 # REPLACE "_ph" with "part-phase"
-replace_phase_suffix() {
+replace_suffix() {
     local pattern=$1
     local replacement=$2
     local dir=$3
@@ -321,17 +321,29 @@ replace_phase_suffix() {
 }
 
 # Apply replacements
-replace_phase_suffix "bold_ph" "part-phase_bold" "$BIDS/func"
-replace_phase_suffix "MTR_ph" "part-phase_MTR" "$BIDS/anat"
-replace_phase_suffix "part-mag_T2starw_ph" "part-phase_T2starw" "$BIDS/anat"
-replace_phase_suffix "Unwrapped_T2starw_ph" "Unwrapped_part-phase_T2starw" "$BIDS/anat"
-replace_phase_suffix "T1w_ph" "part-phase_T1w" "$BIDS/anat"
+replace_suffix "bold_ph" "part-phase_bold" "$BIDS/func"
+replace_suffix "MTR_ph" "part-phase_MTR" "$BIDS/anat"
+replace_suffix "part-mag_T2starw_ph" "part-phase_T2starw" "$BIDS/anat"
+replace_suffix "unwrapped_T2starw_ph" "unwrapped_part-phase_T2starw" "$BIDS/anat"
+replace_suffix "T1w_ph" "part-phase_T1w" "$BIDS/anat"
 
-# remove run-? from echo-?_bold
-if ls "$BIDS"/func/*"_run-"* 1> /dev/null 2>&1; then
-  Info "REMOVE the run-? from func files (echoes)"
-  for func in $(ls "$BIDS"/func/*"_run-"*); do
-    mv "$func" "${func/_run-?/}"
+# Remove the run-? from the task-rest when there is only 1 run
+func_rename() {
+  func_acq=$1
+  # remove run-? from echo-?_bold if there are 6 files (ONLY 1 run)
+  if [ $(ls "$BIDS"/func/*${func_acq}_run-?_echo-?_bold* 2>/dev/null | wc -l) -eq 6 ]; then
+    # run-1 is the fMRI and run-2 is the phase
+    for func in $(ls "$BIDS"/func/*"${func_acq}_run-1_echo-"?_bold*); do mv "$func" "${func/_run-1/}"; done
+    for func in $(ls "$BIDS"/func/*"${func_acq}_run-2_echo-"?_part-phase_bold*); do mv "$func" "${func/_run-2/}"; done
+  fi
+}
+func_rename "task-rest"
+
+# Remove runs from MTR acquisitions
+if ls "$BIDS"/anat/*acq-mtw_mt-off_run-?_MTR.json 1> /dev/null 2>&1; then
+  # Info "REMOVE the run-? from MTR"
+  for mtr in $(ls "$BIDS"/anat/*acq-mtw*); do
+    mv "$mtr" "${mtr/_run-?/}"
   done
 fi
 
@@ -344,43 +356,35 @@ fi
 # -----------------------------------------------------------------------------------------------
 Info  "TB1TFL - B1 fieldmaps"
 # -----------------------------------------------------------------------------------------------
-# Find files containing "acq-anat_TB1TFL?" where ? could be {,a,b,c..,n}, sort them alphabetically, and process them
-if ls "${BIDS}/fmap/"*acq-anat_TB1TFL*gz 1> /dev/null 2>&1; then
-  TB1TFLa=($(ls "${BIDS}/fmap/"*acq-anat_TB1TFL*gz | sort -V ))
-  for i in "${!TB1TFLa[@]}"; do
-    run_num=$((i + 1))
-    mv -v "${TB1TFLa[${i}]}" "${BIDS}/fmap/${id}acq-anat_run-${run_num}_TB1TFL.nii.gz"
-    mv -v "${TB1TFLa[${i}]/nii.gz/json}" "${BIDS}/fmap/${id}acq-anat_run-${run_num}_TB1TFL.json"
-  done
-fi
+tb1tfl_rename() {
+    # If there is two files, remove the run-? and and the second file will be the scaled flip angle map (sfam) 
+    b1s=($(ls "${BIDS}/fmap/"*acq-anat_*TB1TFL*gz))
+    if [[ ${#b1s[@]} -eq 2 ]]; then
+      Info "Make run-1 anat and run-2 the sfam"
+      replace_suffix "acq-anat_run-1_TB1TFL" "acq-anat_TB1TFL" "$BIDS/fmap"
+      replace_suffix "acq-anat_run-2_TB1TFL" "acq-sfam_TB1TFL" "$BIDS/fmap"
+    elif [[ ${#b1s[@]} -gt 2 ]]; then
+      Info "Process the naming of multiple TB1TFL runs in corresponding pairs"
+      for ((i=0; i<${#b1s[@]}; i+=2)); do
+          file1="${b1s[$i]}"
+          file2="${b1s[$i+1]}"
+          run_num=$((i / 2 + 1))
+          # Rename both files and their JSON counterparts
+          mv "$file1" "${BIDS}/fmap/${id}acq-anat_run-${run_num}_TB1TFL.nii.gz"
+          mv "$file2" "${BIDS}/fmap/${id}acq-sfam_run-${run_num}_TB1TFL.nii.gz"
+          mv "${file1/nii.gz/json}" "${BIDS}/fmap/${id}acq-anat_run-${run_num}_TB1TFL.json"
+          mv "${file2/nii.gz/json}" "${BIDS}/fmap/${id}acq-sfam_run-${run_num}_TB1TFL.json"
+      done
+    fi
+}
 
-# Check if there are TB1TFL files
-if ls "${BIDS}/fmap/"*TB1TFL*gz 1> /dev/null 2>&1; then
-    TB1TFL=($(ls "${BIDS}/fmap/"*TB1TFL*gz))
-    Info "Organizing TB1TFL acquisitions"
-
-    # Process files in pairs
-    for ((i=0; i<${#TB1TFL[@]}; i+=2)); do
-        file1="${TB1TFL[$i]}"
-        file2="${TB1TFL[$i+1]}"
-        run_num=$((i / 2 + 1))
-
-        # Extract sequence types (anatSag or anatTra) for both files
-        seq_type1=$(basename "$file1" | grep -oP "acq-\K\w+(?=_run)")
-        seq_type2=$(basename "$file2" | grep -oP "acq-\K\w+(?=_run)")
-
-        # Rename both files and their JSON counterparts
-        mv -v "$file1" "${BIDS}/fmap/${id}acq-${seq_type1/anat/sfam}_run-${run_num}_TB1TFL.nii.gz"
-        mv -v "$file2" "${BIDS}/fmap/${id}acq-${seq_type2}_run-${run_num}_TB1TFL.nii.gz"
-        mv -v "${file1/nii.gz/json}" "${BIDS}/fmap/${id}acq-${seq_type1/anat/sfam}_run-${run_num}_TB1TFL.json"
-        mv -v "${file2/nii.gz/json}" "${BIDS}/fmap/${id}acq-${seq_type2}_run-${run_num}_TB1TFL.json"
-    done
-fi
+# Rename TB1TFL files
+if ls "${BIDS}/fmap/"*acq-anat_*TB1TFL*gz 1> /dev/null 2>&1; then tb1tfl_rename; fi
 
 # -----------------------------------------------------------------------------------------------
 # Rename T2starmap
-if ls "$BIDS"/anat/${id}T2starw.* 1> /dev/null 2>&1; then 
-  for t2 in "$BIDS"/anat/${id}T2starw.*; do 
+if ls "$BIDS"/anat/${id}acq-aspire_T2starw.* 1> /dev/null 2>&1; then 
+  for t2 in "$BIDS"/anat/${id}acq-aspire_T2starw.*; do 
     mv $t2 ${t2/T2starw/T2starmap} 
   done
 fi
@@ -389,22 +393,22 @@ fi
 Info "DWI acquisitions"
 # -----------------------------------------------------------------------------------------------
 # Loop through the directories of DWI acquisitions
-n=$((${#origDWI[@]} - 1))
-for ((k=0; k<=n; k++)); do
-  N=$(ls -d ${origDWI[k]} 2>/dev/null | wc -l) # make it quiet
-  if [ "$N" -eq 0 ]; then
-    Warning "No directories were found with the following name: ${origDWI[k]}"
-  elif [ "$N" -gt 1 ]; then
-    Names=($(ls -d ${origDWI[k]} 2>/dev/null))
-    for ((i = 0; i < N; i++)); do
-      nii=$(echo ${Names[i]} | awk -F '_' '{print $1 "_" $2}')
-      nom=${id}${bidsDWI[k]}
-      dcm=$(echo ${nom##*_})
-      nom=$(echo ${nom/$dcm/}run-$((i+1))_${dcm})
-      cmd dcm2niix -z y -b y -o "$BIDS" -f "$nom" "${nii}${origDWI[k]}"
+for k in "${!origDWI[@]}"; do
+  bids_name=${bidsDWI[k]}
+  mri="${bids_name##*_}"                                                                                                                                                      
+  acq="${bids_name%_*}"
+  # Check if acq_string is not empty
+  if [[ ${acq} == ${mri} ]]; then acq=""; else acq="${acq}_"; fi
+  # Find the number of dicoms_sorted with the sequence name (quiet)
+  N=$(ls -d ${origDWI[k]} 2>/dev/null | wc -l)
+  if [ "$N" -gt 1 ]; then
+    Names=($(ls -d ${origDWI[k]}))
+    for i in "${!Names[@]}"; do
+       out_name="${id}${acq}run-$((i+1))_${mri}"
+       dcm2niix -z y -b y -o "$BIDS" -f "$out_name" ${Names[i]}
     done
   elif [ "$N" -eq 1 ]; then
-     cmd dcm2niix -z y -b y -o "$BIDS" -f "${id}${bidsDWI[k]}" "${origDWI[k]}"
+     dcm2niix -z y -b y -o "$BIDS" -f ${id}${bids_name} ${origDWI[k]}
   fi
 done
 
@@ -418,25 +422,38 @@ if ls "$BIDS"/*dwi.* 1> /dev/null 2>&1; then mv "$BIDS"/*dwi.* "$BIDS"/dwi; fi
 if ls "$BIDS"/*epi* 1> /dev/null 2>&1; then mv "$BIDS"/*epi* "$BIDS"/fmap; fi
 if ls "$BIDS"/anat/*ROI* 1> /dev/null 2>&1; then rm "$BIDS"/anat/*ROI*; fi
 
-if ls "$BIDS"/dwi/*"acq-"*"_dir-"*"_run-1_dwi"* 1> /dev/null 2>&1; then
-  Info "REMOVE run-1 string from new 7T DWI acquisition"
-  for dwi in $(ls "$BIDS"/dwi/*"acq-"*"_dir-"*"_run-1_dwi"*); do mv "$dwi" "${dwi/run-1_/}"; done
-fi
+dwi_rename() {
+    local dwi_acq=$1
+    # If there is two files, remove the run-? and and the second file will be the phase
+    dwis=($(ls ${BIDS}/dwi/*${dwi_acq}*_dwi.nii.gz))
+    Info "DWIS ${dwi_acq}: ${#dwis[@]}"
+    if [[ ${#dwis[@]} -eq 2 ]]; then
+      Info "REMOVE run-1 string from new 7T DWI acquisition & Make the run-2 the phase file"
+      replace_suffix "${dwi_acq}_run-1_dwi" "${dwi_acq}_dwi" "$BIDS/dwi"
+      replace_suffix "${dwi_acq}_run-2_dwi" "${dwi_acq}_part-phase_dwi" "$BIDS/dwi"
+    elif [[ ${#dwis[@]} -gt 2 ]]; then
+      Info "Process the naming of multiple DWI runs in corresponding pairs"
+      for ((i=0; i<${#dwis[@]}; i+=2)); do
+          file1="${dwis[$i]}"
+          file2="${dwis[$i+1]}"
+          run_num=$((i / 2 + 1))
+          # Rename both files and their JSON counterparts
+          mv "$file1" "${BIDS}/dwi/${id}${dwi_acq}_run-${run_num}_dwi.nii.gz"
+          mv "$file2" "${BIDS}/dwi/${id}${dwi_acq}_run-${run_num}_part-phase_dwi.nii.gz"
+          mv "${file1/nii.gz/json}" "${BIDS}/dwi/${id}${dwi_acq}_run-${run_num}_dwi.json"
+          mv "${file2/nii.gz/json}" "${BIDS}/dwi/${id}${dwi_acq}_run-${run_num}_part-phase_dwi.json"
+      done
+    fi
+}
 
-if ls "$BIDS"/dwi/*"acq-"*"_dir-"*"_run-2_dwi"* 1> /dev/null 2>&1; then
-  Info "REPLACE run-2 string to part-phase from new 7T DWI acquisition"
-  for dwi in $(ls "$BIDS"/dwi/*"acq-"*"_dir-"*"_run-2_dwi"*); do mv "$dwi" "${dwi/run-2_/part-phase_}"; done
-fi
+# Rename the phase files (run-2 or mulples of 2)
+dwi_rename acq-multib38_dir-AP
+dwi_rename acq-multib70_dir-AP
+dwi_rename acq-b0_dir-PA
 
-if ls "$BIDS"/dwi/*"_sbref_ph"* 1> /dev/null 2>&1; then
-  Info "REPLACE \"_sbref_ph\" with \"_part-phase_sbref\""
-  for dwi in $(ls "$BIDS"/dwi/*"_sbref_ph"*); do mv "$dwi" "${dwi/_sbref_ph/_part-phase_sbref}"; done
-fi
-
-if ls "$BIDS"/dwi/*"_dwi_ph"* 1> /dev/null 2>&1; then
-  Info "REPLACE \"_dwi_ph\" with \"_part-phase_dwi\""
-  for dwi in $(ls "$BIDS"/dwi/*"_dwi_ph"*); do mv "$dwi" "${dwi/_dwi_ph/_part-phase_dwi}"; done
-fi
+# Replace file names with the correct suffix
+replace_suffix "sbref_ph" "part-phase_sbref" "$BIDS/dwi"
+replace_suffix "dwi_ph" "part-phase_dwi" "$BIDS/dwi"
 
 # -----------------------------------------------------------------------------------------------
 Info "Add Units to the phase files"
@@ -476,7 +493,7 @@ echo -e "${Subj}\t${SES/ses-/}\t${dat}\t${anat}\t${dwi}\t${func}\t${fmap}\t${SUB
 # Gitignore file
 bidsignore="$BIDS_DIR"/.bidsignore
 # Check if file exist
-if [ ! -f "$bidsignore" ]; then echo -e "participants_7t2bids.tsv\nbids_validator_output.txt" > "$bidsignore"; fi
+if [ ! -f "$bidsignore" ]; then echo -e "participants_7t2bids.tsv\nbids_validator_output.txt\nsub*/ses*/anat/*desc-*\nsub*/ses*/anat/*GRE*" > "$bidsignore"; fi
 
 # -----------------------------------------------------------------------------------------------
 # Add the new subject to the participants.tsv file
