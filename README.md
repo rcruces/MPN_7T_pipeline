@@ -78,7 +78,7 @@ mpn_micapipe.sh <subject> <session> <path to singularity image>
 |  13   |  Aspire_P_anat-T2star_acq-me_gre_0\*7iso_ASPIRE    | acq-aspire_part-phase_T2starw       | anat          |
 |  14   |  EchoCombined_anat-T2star_acq-me_gre_0\*7iso_ASPIRE | acq-aspire_desc-echoCombined_T2starw | anat          |
 |  15   |  sensitivity_corrected_mag_anat-T2star_acq-me_gre_0\*7iso_ASPIRE | acq-aspire_desc-echoCombinedSensitivityCorrected_T2starw | anat |
-|  16   |  T2star_anat-T2star_acq-me_gre_0\*7iso_ASPIRE      | acq-aspire_T2starw                             | anat          |
+|  16   |  T2star_anat-T2star_acq-me_gre_0\*7iso_ASPIRE      | acq-aspire_[T2starw,T2starmap]      | anat          |
 |  17   |  anat-mtw_acq-MTON_07mm                            | acq-mtw_mt-on_MTR                   | anat          |
 |  18   |  anat-mtw_acq-MTOFF_07mm                           | acq-mtw_mt-off_MTR                  | anat          |
 |  19   |  anat-mtw_acq-T1w_07mm                             | acq-mtw_T1w                         | anat          |
@@ -93,8 +93,8 @@ mpn_micapipe.sh <subject> <session> <path to singularity image>
 ## Field maps
 | **N** | **7T Terra Siemens acquisition**             | **BIDS**                              | **Directory** |
 |:-----:|:--------------------------------------------:|:-------------------------------------:|:-------------:|
-|  1    | fmap-b1_tra_p2                              | acq-[anat\|sfam]_TB1TFL                | fmap          |
-|  2    | fmap-b1_acq-sag_p2                          | acq-[anat\|sfam]_TB1TFL                | fmap          |
+|  1    | fmap-b1_tra_p2                              | acq-[anat,sfam]_TB1TFL                | fmap          |
+|  2    | fmap-b1_acq-sag_p2                          | acq-[anat,sfam]_TB1TFL                | fmap          |
 |  3    | fmap-fmri_acq-mbep2d_SE_19mm_dir-AP         | acq-fmri_dir-AP_epi                   | fmap          |
 |  4    | fmap-fmri_acq-mbep2d_SE_19mm_dir-PA         | acq-fmri_dir-PA_epi                   | fmap          |
 
