@@ -1,3 +1,7 @@
+
+# Repository deprecated 
+# see: https://github.com/BIC-MNI/mni-7t-dicom-to-bids/tree/main 
+
 ![mpn logo](img/mpn_banner.png)
 
 # Montréal Paris Neurobanque (MPN) 7T MRI Data Processing Pipeline
